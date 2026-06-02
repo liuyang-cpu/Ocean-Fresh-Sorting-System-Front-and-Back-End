@@ -1,0 +1,41 @@
+<UserControl x:Class="OceanFresh.SortingSystem.HMI.Pages.MonitoringPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <Grid>
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="2*" />
+      <ColumnDefinition Width="*" />
+    </Grid.ColumnDefinitions>
+
+    <Border Background="#122C52" CornerRadius="16" Padding="20" Margin="0,0,12,0">
+      <Grid>
+        <Rectangle Fill="#0D2343" RadiusX="16" RadiusY="16" />
+        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+          <TextBlock Text="X 光实时视图" Foreground="White" FontSize="28" FontWeight="Bold" HorizontalAlignment="Center" />
+          <TextBlock Text="{Binding CurrentChannel}" Foreground="#20D58C" FontSize="18" FontWeight="SemiBold" Margin="0,12,0,0" HorizontalAlignment="Center" />
+          <TextBlock Text="这里显示当前通道的 X 光图像、检测框与瑕疵标注叠加" Foreground="#9FC8FF" Margin="0,12,0,0" />
+        </StackPanel>
+      </Grid>
+    </Border>
+
+    <StackPanel Grid.Column="1">
+      <Border Background="#122C52" CornerRadius="16" Padding="20" Margin="0,0,0,12">
+        <StackPanel>
+          <TextBlock Text="当前结果" Foreground="White" FontSize="20" FontWeight="SemiBold" Margin="0,0,0,14" />
+          <TextBlock Text="{Binding LastDetection}" Foreground="#20D58C" FontSize="18" FontWeight="Bold" />
+          <TextBlock Text="{Binding LastConfidence}" Foreground="#CFE2FF" Margin="0,10,0,0" />
+          <TextBlock Text="{Binding LastNozzle}" Foreground="#CFE2FF" Margin="0,10,0,0" />
+        </StackPanel>
+      </Border>
+
+      <Border Background="#122C52" CornerRadius="16" Padding="20">
+        <StackPanel>
+          <TextBlock Text="运行约束" Foreground="White" FontSize="20" FontWeight="SemiBold" Margin="0,0,0,14" />
+          <TextBlock Text="同目标单次有效剔除" Foreground="#CFE2FF" Margin="0,0,0,8" />
+          <TextBlock Text="模型切换仅在安全窗口执行" Foreground="#CFE2FF" Margin="0,0,0,8" />
+          <TextBlock Text="数据库写入异步，不阻塞控制链路" Foreground="#CFE2FF" />
+        </StackPanel>
+      </Border>
+    </StackPanel>
+  </Grid>
+</UserControl>

@@ -1,0 +1,27 @@
+# Build outputs
+bin/
+obj/
+
+# Visual Studio / Rider
+.vs/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Test and local artifacts
+artifacts/
+TestResults/
+
+# Runtime data
+data/
+*.db
+*.sqlite
+*.sqlite3
+logs/
+*.log
+
+# OS files
+Thumbs.db
+Desktop.ini
+

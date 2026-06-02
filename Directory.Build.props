@@ -1,0 +1,13 @@
+<Project>
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>12.0</LangVersion>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <Company>Ocean Fresh</Company>
+    <Product>Ocean Fresh Sorting System</Product>
+    <Authors>Codex</Authors>
+    <RootNamespace>OceanFresh.SortingSystem</RootNamespace>
+  </PropertyGroup>
+</Project>
