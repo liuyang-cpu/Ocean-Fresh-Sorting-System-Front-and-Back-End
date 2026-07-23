@@ -7,6 +7,10 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddOceanFreshInfrastructure(this IServiceCollection services)
     {
+        var techikOptions = TechikIntegrationOptions.LoadFromEnvironment();
+        techikOptions.ApplyCaptureDirectoryToProcess();
+        services.AddSingleton(techikOptions);
+
         services.AddSingleton<SqliteConnectionFactory>();
         services.AddSingleton<SqliteDatabaseInitializer>();
         services.AddSingleton<ISeafoodCategoryRepository, SqliteSeafoodCategoryRepository>();
@@ -23,8 +27,16 @@ public static class DependencyInjection
         services.AddSingleton<IUserRepository, SqliteUserRepository>();
         services.AddSingleton<IOperationAuditRepository, SqliteOperationAuditRepository>();
         services.AddSingleton<IRuntimeStateStore, InMemoryRuntimeStateStore>();
-        services.AddSingleton<IHardwareProtocolClient, SimulatedHardwareProtocolClient>();
-        services.AddSingleton<IEjectorController, SimulatedEjectorController>();
+        if (techikOptions.Mode == TechikIntegrationMode.Disabled)
+        {
+            services.AddSingleton<IHardwareProtocolClient, SimulatedHardwareProtocolClient>();
+            services.AddSingleton<IEjectorController, SimulatedEjectorController>();
+        }
+        else
+        {
+            services.AddSingleton<IHardwareProtocolClient, TechikHardwareProtocolClient>();
+            services.AddSingleton<IEjectorController, TechikEjectorController>();
+        }
 
         services.AddSingleton<IDeviceHealthProvider, SimulatedDeviceHealthProvider>();
         services.AddSingleton<IRuntimeDataSourceStore, InMemoryRuntimeDataSourceStore>();

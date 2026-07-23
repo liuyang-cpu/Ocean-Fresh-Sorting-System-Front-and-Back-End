@@ -55,9 +55,10 @@ internal static class CompanionProcessManager
         var srcDirectory = Path.GetFullPath(Path.Combine(currentDirectory, "..", "..", "..", ".."));
         var candidates = new[]
         {
+            Path.Combine(currentDirectory, "LocalApi", "OceanFresh.SortingSystem.LocalApi.exe"),
+            Path.Combine(currentDirectory, "OceanFresh.SortingSystem.LocalApi.exe"),
             Path.Combine(srcDirectory, "OceanFresh.SortingSystem.LocalApi", "bin", "Release", "net8.0", "OceanFresh.SortingSystem.LocalApi.exe"),
-            Path.Combine(srcDirectory, "OceanFresh.SortingSystem.LocalApi", "bin", "Debug", "net8.0", "OceanFresh.SortingSystem.LocalApi.exe"),
-            Path.Combine(currentDirectory, "OceanFresh.SortingSystem.LocalApi.exe")
+            Path.Combine(srcDirectory, "OceanFresh.SortingSystem.LocalApi", "bin", "Debug", "net8.0", "OceanFresh.SortingSystem.LocalApi.exe")
         };
 
         return candidates.FirstOrDefault(File.Exists) ?? candidates[0];
@@ -87,6 +88,8 @@ internal static class CompanionProcessManager
         var repositoryRoot = Path.GetFullPath(Path.Combine(currentDirectory, "..", "..", "..", "..", ".."));
         var candidates = new[]
         {
+            Path.Combine(currentDirectory, "YoloService", "start_yolo_fastapi_service.bat"),
+            Path.Combine(currentDirectory, "YoloService", "start_yolo_service.bat"),
             Path.Combine(repositoryRoot, "predict", "yolo", "service", "start_yolo_service.bat"),
             Path.Combine(repositoryRoot, "predict", "youge", "service", "start_yolo_fastapi_service.bat")
         };
