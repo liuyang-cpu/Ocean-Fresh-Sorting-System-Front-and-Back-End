@@ -1,9 +1,12 @@
 param(
     [Parameter(Mandatory = $false)]
-    [string]$DeploymentRoot = $PSScriptRoot
+    [string]$DeploymentRoot
 )
 
 $ErrorActionPreference = "Stop"
+if ([string]::IsNullOrWhiteSpace($DeploymentRoot)) {
+    $DeploymentRoot = $PSScriptRoot
+}
 $root = [IO.Path]::GetFullPath($DeploymentRoot)
 $python = Join-Path $root "PythonRuntime\python.exe"
 $bridge = Join-Path $root "HardwareBridge\TechikDetectorBridge.exe"

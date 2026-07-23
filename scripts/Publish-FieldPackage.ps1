@@ -180,7 +180,7 @@ $launcher | Set-Content -LiteralPath (Join-Path $packageRoot "start-oceanfresh.c
 $checker = @"
 @echo off
 cd /d "%~dp0"
-powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0Test-OfflineDeployment.ps1" -DeploymentRoot "%~dp0"
+powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0Test-OfflineDeployment.ps1"
 pause
 "@
 $checker | Set-Content -LiteralPath (Join-Path $packageRoot "check-environment.cmd") -Encoding ASCII
