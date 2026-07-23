@@ -30,4 +30,9 @@ public partial class MainWindow : Window
             viewModel.AdminPassword = passwordBox.Password;
         }
     }
+
+    private void ReturnToDesktopButton_OnClick(object sender, RoutedEventArgs e)
+    {
+        WindowState = WindowState.Minimized;
+    }
 }

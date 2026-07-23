@@ -389,6 +389,31 @@
       <Grid.Background>
         <SolidColorBrush Color="#07192A" />
       </Grid.Background>
+      <Button Width="156"
+              Height="54"
+              Margin="0,24,24,0"
+              Padding="18,0"
+              HorizontalAlignment="Right"
+              VerticalAlignment="Top"
+              Panel.ZIndex="10"
+              Background="#102C43"
+              Foreground="#E8F2FA"
+              BorderBrush="#3A718F"
+              BorderThickness="1"
+              FontSize="17"
+              FontWeight="SemiBold"
+              ToolTip="最小化程序并显示 Windows 桌面"
+              AutomationProperties.Name="返回 Windows 桌面"
+              Click="ReturnToDesktopButton_OnClick">
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+          <TextBlock Text="&#xE921;"
+                     FontFamily="Segoe MDL2 Assets"
+                     FontSize="20"
+                     Margin="0,0,10,0"
+                     VerticalAlignment="Center" />
+          <TextBlock Text="返回桌面" VerticalAlignment="Center" />
+        </StackPanel>
+      </Button>
       <Border Width="640"
               Padding="52,42"
               Background="#0B2238"
