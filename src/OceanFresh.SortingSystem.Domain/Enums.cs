@@ -6,6 +6,14 @@ public enum UserRole
     Administrator = 2
 }
 
+public enum OperationAuditCategory
+{
+    Login = 1,
+    Detection = 2,
+    Review = 3,
+    Management = 4
+}
+
 public enum DefectHandlingAction
 {
     Pass = 0,
@@ -17,10 +25,8 @@ public enum DefectHandlingAction
 
 public enum ModelStatus
 {
-    Draft = 1,
-    Active = 2,
-    Disabled = 3,
-    RolledBack = 4
+    Normal = 0,
+    Deleted = 9
 }
 
 public enum AlarmSeverity
@@ -46,4 +52,40 @@ public enum RuntimeMode
     Running = 2,
     SafeStop = 3,
     Faulted = 4
+}
+
+public enum RuntimeDataSourceMode
+{
+    XrayCamera = 1,
+    LocalImageDirectory = 2
+}
+
+public enum DetectionSessionStatus
+{
+    Created = 1,
+    Running = 2,
+    Stopped = 3
+}
+
+public enum ManualReviewJudgement
+{
+    ConfirmedAbnormal = 1,
+    FalsePositive = 2,
+    RelabeledAbnormal = 3
+}
+
+public enum DeviceType
+{
+    Conveyor = 1,
+    XrayDetector = 2,
+    Ejector = 3,
+    Controller = 4,
+    XraySource = 5
+}
+
+public enum HardwareSignalSeverity
+{
+    Normal = 0,
+    Warning = 1,
+    Critical = 2
 }

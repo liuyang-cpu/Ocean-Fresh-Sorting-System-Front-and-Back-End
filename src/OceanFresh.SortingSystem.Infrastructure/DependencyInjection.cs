@@ -13,17 +13,25 @@ public static class DependencyInjection
         services.AddSingleton<ISeafoodProductRepository, SqliteSeafoodProductRepository>();
         services.AddSingleton<ISeafoodTraitRepository, SqliteSeafoodTraitRepository>();
         services.AddSingleton<IChannelConfigRepository, SqliteChannelConfigRepository>();
-        services.AddSingleton<IProductRecipeRepository, SqliteProductRecipeRepository>();
         services.AddSingleton<IModelRegistryRepository, SqliteModelRegistryRepository>();
-        services.AddSingleton<IRecipeModelBindingRepository, SqliteRecipeModelBindingRepository>();
         services.AddSingleton<IInspectionRecordRepository, SqliteInspectionRecordRepository>();
+        services.AddSingleton<IManualReviewRepository, SqliteManualReviewRepository>();
+        services.AddSingleton<IManualReviewPreviewGenerator, ImageSharpManualReviewPreviewGenerator>();
+        services.AddSingleton<IDetectionSessionRepository, SqliteDetectionSessionRepository>();
         services.AddSingleton<IAlarmRepository, SqliteAlarmRepository>();
+        services.AddSingleton<IHardwareDeviceRepository, SqliteHardwareDeviceRepository>();
         services.AddSingleton<IUserRepository, SqliteUserRepository>();
+        services.AddSingleton<IOperationAuditRepository, SqliteOperationAuditRepository>();
         services.AddSingleton<IRuntimeStateStore, InMemoryRuntimeStateStore>();
-        services.AddSingleton<IDeviceHealthProvider, SimulatedDeviceHealthProvider>();
+        services.AddSingleton<IHardwareProtocolClient, SimulatedHardwareProtocolClient>();
         services.AddSingleton<IEjectorController, SimulatedEjectorController>();
-        services.AddSingleton<IImageSource, SimulatedImageSource>();
-        services.AddSingleton<IInferenceEngine, SimulatedInferenceEngine>();
+
+        services.AddSingleton<IDeviceHealthProvider, SimulatedDeviceHealthProvider>();
+        services.AddSingleton<IRuntimeDataSourceStore, InMemoryRuntimeDataSourceStore>();
+        services.AddSingleton<IImageSource, RuntimeConfiguredImageSource>();
+        services.AddSingleton<IPredictWorkspace, FileSystemPredictWorkspace>();
+        services.AddSingleton<IProductPredictConfigStore, FileSystemProductPredictConfigStore>();
+        services.AddSingleton<IInferenceEngine, HttpYoloServiceInferenceEngine>();
         return services;
     }
 

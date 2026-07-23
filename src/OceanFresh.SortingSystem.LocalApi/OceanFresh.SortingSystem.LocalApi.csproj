@@ -3,5 +3,12 @@
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
     <ProjectReference Include="..\OceanFresh.SortingSystem.Application\OceanFresh.SortingSystem.Application.csproj" />
     <ProjectReference Include="..\OceanFresh.SortingSystem.Infrastructure\OceanFresh.SortingSystem.Infrastructure.csproj" />
+    <ProjectReference Include="..\OceanFresh.SortingSystem.Runtime\OceanFresh.SortingSystem.Runtime.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="..\..\predict\**\*">
+      <Link>predict\%(RecursiveDir)%(Filename)%(Extension)</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 </Project>

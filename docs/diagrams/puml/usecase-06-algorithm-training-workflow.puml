@@ -1,0 +1,132 @@
+@startuml
+skinparam defaultFontName "Microsoft YaHei"
+skinparam shadowing false
+skinparam dpi 160
+skinparam packageStyle rectangle
+skinparam roundCorner 12
+skinparam actorStyle awesome
+skinparam ArrowColor #475569
+skinparam UsecaseBorderColor #4F46E5
+skinparam UsecaseBackgroundColor #EEF2FF
+skinparam PackageBorderColor #C7D2FE
+skinparam PackageBackgroundColor #F8FAFC
+skinparam ActorBorderColor #312E81
+skinparam ActorBackgroundColor #E0E7FF
+
+left to right direction
+title 算法训练服务三阶段优化用例图
+
+actor "算法工程师" as Engineer
+actor "训练调度服务" as Scheduler
+actor "Optuna 搜索器" as Optuna
+actor "LLM 参数空间优化器" as LLM
+actor "YOLO 训练运行时\n/ GPU 环境" as Trainer
+actor "实验报告与模型产物" as Artifact
+
+rectangle "三阶段训练优化服务" {
+  package "工作流控制" {
+    usecase "配置三阶段工作流" as UC_Config
+    usecase "预演执行计划\n--dry-run" as UC_DryRun
+    usecase "启动完整训练工作流" as UC_StartWorkflow
+    usecase "从已有结果继续运行" as UC_Resume
+    usecase "记录运行日志与汇总" as UC_LogSummary
+  }
+
+  package "阶段一：基础训练配方优化" {
+    usecase "运行基础 YOLO11n 配方搜索" as UC_Stage1
+    usecase "执行多轮 Optuna 搜索" as UC_OptunaCycle
+    usecase "分析最佳 trial" as UC_BestTrial
+    usecase "调用 LLM 优化搜索空间" as UC_LLMRefine
+    usecase "生成下一轮配置" as UC_Materialize
+    usecase "提取最佳训练参数覆盖项" as UC_BestRecipe
+  }
+
+  package "阶段二：注意力结构消融" {
+    usecase "基于最佳配方生成结构配置" as UC_GenStage2
+    usecase "运行注意力结构实验" as UC_RunAblation
+    usecase "跳过可选结构实验" as UC_SkipOptional
+    usecase "生成结构对比报告" as UC_Stage2Report
+    usecase "选择最佳 / Top 非基线结构" as UC_SelectStructure
+  }
+
+  package "阶段三：选中结构二次优化" {
+    usecase "构建 Stage3 调度配置" as UC_BuildStage3
+    usecase "继承或重置搜索空间" as UC_SearchSpace
+    usecase "对选中结构再次搜索" as UC_Stage3
+    usecase "基线最优时跳过二次优化" as UC_SkipStage3
+  }
+
+  package "输出产物" {
+    usecase "保存 best_recipe_overrides.json" as UC_RecipeFile
+    usecase "保存 best_structure.json" as UC_StructureFile
+    usecase "保存 selected_structures.json" as UC_SelectedFile
+    usecase "保存 workflow_summary.json" as UC_WorkflowSummary
+    usecase "产出候选模型权重与指标" as UC_ModelArtifacts
+  }
+}
+
+Engineer --> UC_Config
+Engineer --> UC_DryRun
+Engineer --> UC_StartWorkflow
+Engineer --> UC_Resume
+Engineer --> UC_Stage2Report
+Engineer --> UC_WorkflowSummary
+
+Scheduler --> UC_StartWorkflow
+Scheduler --> UC_LogSummary
+Optuna --> UC_OptunaCycle
+LLM --> UC_LLMRefine
+Trainer --> UC_Stage1
+Trainer --> UC_RunAblation
+Trainer --> UC_Stage3
+Artifact --> UC_ModelArtifacts
+Artifact --> UC_WorkflowSummary
+
+UC_StartWorkflow .> UC_Config : <<include>>
+UC_StartWorkflow .> UC_Stage1 : <<include>>
+UC_Resume .> UC_Stage1 : <<extend>>\n使用已有 Stage1 summary 或 cycle
+UC_Resume .> UC_RunAblation : <<extend>>\n使用已有 Stage2 report group
+
+UC_Stage1 .> UC_OptunaCycle : <<include>>
+UC_OptunaCycle .> UC_BestTrial : <<include>>
+UC_OptunaCycle .> UC_LLMRefine : <<include>>
+UC_LLMRefine .> UC_Materialize : <<include>>
+UC_BestTrial .> UC_BestRecipe : <<include>>
+UC_BestRecipe .> UC_RecipeFile : <<include>>
+
+UC_GenStage2 .> UC_BestRecipe : <<include>>
+UC_RunAblation .> UC_GenStage2 : <<include>>
+UC_RunAblation .> UC_SkipOptional : <<extend>>
+UC_RunAblation .> UC_Stage2Report : <<include>>
+UC_Stage2Report .> UC_SelectStructure : <<include>>
+UC_SelectStructure .> UC_StructureFile : <<include>>
+UC_SelectStructure .> UC_SelectedFile : <<include>>
+
+UC_BuildStage3 .> UC_SelectStructure : <<include>>
+UC_BuildStage3 .> UC_SearchSpace : <<include>>
+UC_Stage3 .> UC_BuildStage3 : <<include>>
+UC_Stage3 .> UC_OptunaCycle : <<include>>
+UC_SelectStructure .> UC_SkipStage3 : <<extend>>\n仅基线结构最优时
+
+UC_LogSummary .> UC_WorkflowSummary : <<include>>
+UC_Stage1 .> UC_ModelArtifacts : <<include>>
+UC_RunAblation .> UC_ModelArtifacts : <<include>>
+UC_Stage3 .> UC_ModelArtifacts : <<include>>
+
+note right of UC_Stage1
+  阶段一固定原始 YOLO11n 结构，
+  搜索 imgsz、batch、loss gain、
+  mosaic、scale 等训练配方参数。
+end note
+
+note right of UC_RunAblation
+  阶段二比较基线、CBAM、ECA 等
+  注意力结构配置，默认跳过 optional。
+end note
+
+note bottom of UC_Stage3
+  阶段三对选中的非基线结构进行
+  结构特定的二次参数优化。
+end note
+
+@enduml

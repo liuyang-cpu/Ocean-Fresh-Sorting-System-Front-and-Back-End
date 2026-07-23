@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>海洋生鲜分拣系统图示</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f4f7fb;
+      --card: #ffffff;
+      --text: #17324d;
+      --muted: #5b7188;
+      --border: #d6e2ef;
+      --accent: #1d4ed8;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    .page {
+      max-width: 1440px;
+      margin: 0 auto;
+      padding: 32px 24px 48px;
+    }
+
+    h1 {
+      margin: 0 0 12px;
+      font-size: 30px;
+      color: #0f2740;
+    }
+
+    .intro {
+      margin: 0 0 28px;
+      color: var(--muted);
+      line-height: 1.7;
+    }
+
+    .section {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 20px;
+      margin-bottom: 24px;
+      box-shadow: 0 12px 28px rgba(15, 39, 64, 0.06);
+    }
+
+    .section h2 {
+      margin: 0 0 8px;
+      font-size: 22px;
+      color: #10355c;
+    }
+
+    .section p {
+      margin: 0 0 16px;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .actions {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+    }
+
+    .actions a {
+      display: inline-block;
+      padding: 10px 14px;
+      border-radius: 12px;
+      text-decoration: none;
+      color: white;
+      background: var(--accent);
+      font-size: 14px;
+    }
+
+    .frame {
+      width: 100%;
+      min-height: 680px;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: #fbfdff;
+      overflow: auto;
+    }
+
+    .frame object,
+    .frame iframe {
+      width: 100%;
+      min-height: 680px;
+      border: 0;
+      display: block;
+      background: #fff;
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <h1>海洋生鲜分拣系统图示</h1>
+    <p class="intro">
+      这份页面汇总了基于当前项目框架生成的两张核心图：用例图和联调/推理流程图。
+      你可以先在这里整体浏览，再根据需要用 draw.io 打开对应源文件继续修改。
+    </p>
+
+    <section class="section">
+      <h2>1. 用例图</h2>
+      <p>展示管理员、操作员、X 光图片源、YOLO 服务和剔除机构之间的主要交互，以及系统内的核心业务用例。</p>
+      <div class="actions">
+        <a href="./ocean-fresh-usecase.drawio">打开 .drawio 源文件</a>
+        <a href="./ocean-fresh-usecase.svg">打开 SVG</a>
+      </div>
+      <div class="frame">
+        <object data="./ocean-fresh-usecase.svg" type="image/svg+xml"></object>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>2. 联调与推理流程图</h2>
+      <p>展示从读取当前启用通道、选择图片输入、调用 YOLO FastAPI 服务，到相邻帧去重、业务性状映射、剔除命令预览的主流程。</p>
+      <div class="actions">
+        <a href="./ocean-fresh-flow.drawio">打开 .drawio 源文件</a>
+        <a href="./ocean-fresh-flow.svg">打开 SVG</a>
+      </div>
+      <div class="frame">
+        <object data="./ocean-fresh-flow.svg" type="image/svg+xml"></object>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

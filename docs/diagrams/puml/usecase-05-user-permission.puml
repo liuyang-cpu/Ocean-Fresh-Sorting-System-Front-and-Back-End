@@ -1,0 +1,72 @@
+@startuml
+skinparam defaultFontName "Microsoft YaHei"
+skinparam shadowing false
+skinparam dpi 160
+skinparam packageStyle rectangle
+skinparam roundCorner 12
+skinparam actorStyle awesome
+skinparam ArrowColor #475569
+skinparam UsecaseBorderColor #0891B2
+skinparam UsecaseBackgroundColor #ECFEFF
+skinparam PackageBorderColor #A5F3FC
+skinparam PackageBackgroundColor #F0FDFA
+skinparam ActorBorderColor #164E63
+skinparam ActorBackgroundColor #CFFAFE
+
+left to right direction
+title 用户中心与权限管理用例图
+
+actor "操作员" as Operator
+actor "管理员" as Admin
+
+Admin --|> Operator
+
+rectangle "用户中心与权限控制" {
+  package "登录与退出" {
+    usecase "操作员无密码进入" as UC_OperatorLogin
+    usecase "管理员密码登录" as UC_AdminLogin
+    usecase "退出系统" as UC_Exit
+  }
+
+  package "用户中心" {
+    usecase "查看当前角色" as UC_Role
+    usecase "查看当前账号" as UC_Account
+    usecase "查看登录时间" as UC_LoginTime
+    usecase "查看可访问功能范围" as UC_Permission
+    usecase "修改管理员密码" as UC_ChangePassword
+  }
+
+  package "权限约束" {
+    usecase "访问首页" as UC_Dashboard
+    usecase "访问数据中心" as UC_Data
+    usecase "访问设置页" as UC_Settings
+    usecase "维护系统配置" as UC_Config
+  }
+}
+
+Operator --> UC_OperatorLogin
+Operator --> UC_Exit
+Operator --> UC_Role
+Operator --> UC_Account
+Operator --> UC_LoginTime
+Operator --> UC_Permission
+Operator --> UC_Dashboard
+Operator --> UC_Data
+
+Admin --> UC_AdminLogin
+Admin --> UC_ChangePassword
+Admin --> UC_Settings
+Admin --> UC_Config
+
+UC_Permission .> UC_Role : <<include>>
+UC_Settings .> UC_AdminLogin : <<include>>
+UC_Config .> UC_Settings : <<include>>
+UC_ChangePassword .> UC_AdminLogin : <<include>>
+
+note right of UC_Settings
+  操作员不可进入设置页，
+  不可修改产品、模型、通道、
+  硬件和系统配置。
+end note
+
+@enduml

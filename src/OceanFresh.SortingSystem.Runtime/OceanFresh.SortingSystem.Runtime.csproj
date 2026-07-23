@@ -7,4 +7,10 @@
     <ProjectReference Include="..\OceanFresh.SortingSystem.Application\OceanFresh.SortingSystem.Application.csproj" />
     <ProjectReference Include="..\OceanFresh.SortingSystem.Infrastructure\OceanFresh.SortingSystem.Infrastructure.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <Content Include="..\..\predict\**\*">
+      <Link>predict\%(RecursiveDir)%(Filename)%(Extension)</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
 </Project>

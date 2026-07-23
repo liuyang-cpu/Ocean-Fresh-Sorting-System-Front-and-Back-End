@@ -1,6 +1,9 @@
 # Build outputs
 bin/
 obj/
+dist/
+dist-electron/
+node_modules/
 
 # Visual Studio / Rider
 .vs/
@@ -12,6 +15,8 @@ obj/
 # Test and local artifacts
 artifacts/
 TestResults/
+.drawio-tmp/
+projects/
 
 # Runtime data
 data/
@@ -20,8 +25,17 @@ data/
 *.sqlite3
 logs/
 *.log
+predict/**/service_runtime/
+predict/**/runs/
+
+# Python caches
+__pycache__/
+*.py[cod]
+
+# Vendored local tooling (not application runtime)
+external/drawio-mcp/
+external/drawio-skills/
 
 # OS files
 Thumbs.db
 Desktop.ini
-

@@ -1,0 +1,77 @@
+@startuml
+skinparam defaultFontName "Microsoft YaHei"
+skinparam shadowing false
+skinparam dpi 160
+skinparam packageStyle rectangle
+skinparam roundCorner 12
+skinparam actorStyle awesome
+skinparam ArrowColor #475569
+skinparam UsecaseBorderColor #16A34A
+skinparam UsecaseBackgroundColor #F0FDF4
+skinparam PackageBorderColor #BBF7D0
+skinparam PackageBackgroundColor #F7FEE7
+skinparam ActorBorderColor #14532D
+skinparam ActorBackgroundColor #DCFCE7
+
+left to right direction
+title 首页生产检测用例图
+
+actor "操作员" as Operator
+actor "管理员" as Admin
+actor "X 光相机\n/ 工业相机" as Camera
+actor "本地图片目录" as LocalDir
+actor "YOLO 推理服务" as Yolo
+actor "剔除设备\n/ PLC" as Ejector
+
+Admin --|> Operator
+
+rectangle "首页主控与检测" {
+  usecase "配置数据源" as UC_Source
+  usecase "选择 X 光相机" as UC_CameraSource
+  usecase "选择本地图片目录" as UC_LocalSource
+  usecase "启动机器" as UC_Start
+  usecase "停止机器" as UC_Stop
+  usecase "创建或进入检测任务" as UC_Task
+  usecase "采集 X 光图像" as UC_Capture
+  usecase "读取目录图片" as UC_ReadLocal
+  usecase "按当前通道执行检测" as UC_Detect
+  usecase "查看带框检测结果图" as UC_ViewImage
+  usecase "查看当前图片识别矩阵" as UC_ResultMatrix
+  usecase "查看分类统计与状态记录" as UC_RuntimeStats
+  usecase "输出剔除命令" as UC_EjectCommand
+}
+
+Operator --> UC_Source
+Operator --> UC_Start
+Operator --> UC_Stop
+Operator --> UC_ViewImage
+Operator --> UC_ResultMatrix
+Operator --> UC_RuntimeStats
+
+Camera --> UC_Capture
+LocalDir --> UC_ReadLocal
+Yolo --> UC_Detect
+Ejector --> UC_EjectCommand
+
+UC_Source .> UC_CameraSource : <<include>>
+UC_Source .> UC_LocalSource : <<include>>
+UC_Start .> UC_Task : <<include>>
+UC_Start .> UC_Capture : <<include>>\nX 光相机模式
+UC_Start .> UC_ReadLocal : <<include>>\n本地目录模式
+UC_Capture .> UC_Detect : <<include>>
+UC_ReadLocal .> UC_Detect : <<include>>
+UC_Detect .> UC_ViewImage : <<include>>
+UC_Detect .> UC_ResultMatrix : <<include>>
+UC_Detect .> UC_RuntimeStats : <<include>>
+UC_Detect .> UC_EjectCommand : <<extend>>\n仅生产检测模式
+
+note right of UC_Source
+  机器运行期间禁止切换数据源。
+end note
+
+note bottom of UC_EjectCommand
+  本地图片目录模式只写入统计，
+  不生成、不执行真实剔除动作。
+end note
+
+@enduml

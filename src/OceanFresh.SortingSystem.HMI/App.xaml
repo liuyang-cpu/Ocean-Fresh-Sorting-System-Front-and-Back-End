@@ -7,22 +7,33 @@
   <Application.Resources>
     <local:BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter" />
     <local:InverseBooleanToVisibilityConverter x:Key="InverseBoolToVisibilityConverter" />
-    <SolidColorBrush x:Key="ShellBackground" Color="#0B1724" />
-    <SolidColorBrush x:Key="PanelBackground" Color="#132437" />
-    <SolidColorBrush x:Key="PanelSecondaryBackground" Color="#192D43" />
-    <SolidColorBrush x:Key="SurfaceBrush" Color="#223B56" />
-    <SolidColorBrush x:Key="SurfaceSoftBrush" Color="#1A3047" />
-    <SolidColorBrush x:Key="AccentBrush" Color="#4FA78B" />
-    <SolidColorBrush x:Key="AccentMutedBrush" Color="#7BAEA0" />
-    <SolidColorBrush x:Key="DangerBrush" Color="#A96A6A" />
-    <SolidColorBrush x:Key="OutlineBrush" Color="#2A435E" />
-    <SolidColorBrush x:Key="TextBrush" Color="#E8F0F8" />
-    <SolidColorBrush x:Key="MutedTextBrush" Color="#9FB3C8" />
-    <SolidColorBrush x:Key="{x:Static SystemColors.WindowBrushKey}" Color="#1A3047" />
-    <SolidColorBrush x:Key="{x:Static SystemColors.ControlBrushKey}" Color="#1A3047" />
-    <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="#315B82" />
-    <SolidColorBrush x:Key="{x:Static SystemColors.HighlightTextBrushKey}" Color="#E8F0F8" />
-    <SolidColorBrush x:Key="{x:Static SystemColors.ControlTextBrushKey}" Color="#E8F0F8" />
+    <SolidColorBrush x:Key="ShellBackground" Color="#121720" />
+    <SolidColorBrush x:Key="PanelBackground" Color="#152438" />
+    <SolidColorBrush x:Key="PanelSecondaryBackground" Color="#1A3149" />
+    <SolidColorBrush x:Key="SurfaceBrush" Color="#24435E" />
+    <SolidColorBrush x:Key="SurfaceSoftBrush" Color="#1A2C42" />
+    <SolidColorBrush x:Key="AccentBrush" Color="#2FA66B" />
+    <SolidColorBrush x:Key="AccentMutedBrush" Color="#6FA3C7" />
+    <SolidColorBrush x:Key="DangerBrush" Color="#8E2F36" />
+    <SolidColorBrush x:Key="WarningBrush" Color="#C8892B" />
+    <SolidColorBrush x:Key="OutlineBrush" Color="#55728A" />
+    <SolidColorBrush x:Key="TextBrush" Color="#F1F7FC" />
+    <SolidColorBrush x:Key="MutedTextBrush" Color="#B9C8D6" />
+    <PathGeometry x:Key="SettingsPreviewIconGeometry"
+                  Figures="M2,12 C4.7,7.6 8.1,5.5 12,5.5 C15.9,5.5 19.3,7.6 22,12 C19.3,16.4 15.9,18.5 12,18.5 C8.1,18.5 4.7,16.4 2,12 Z M9,12 A3,3 0 1 0 15,12 A3,3 0 1 0 9,12" />
+    <PathGeometry x:Key="SettingsEditIconGeometry"
+                  Figures="M4,20 L5.2,15.4 L15.7,4.9 L19.1,8.3 L8.6,18.8 Z M13.9,6.7 L17.3,10.1 M4,20 L8.6,18.8" />
+    <PathGeometry x:Key="SettingsDeleteIconGeometry"
+                   Figures="M3,6 L21,6 M8,6 L8,4 L16,4 L16,6 M6,6 L7,20 L17,20 L18,6 M10,10 L10,16 M14,10 L14,16" />
+    <PathGeometry x:Key="SettingsBackIconGeometry"
+                  Figures="M20,12 L5,12 M11,6 L5,12 L11,18" />
+    <PathGeometry x:Key="SettingsFileIconGeometry"
+                  Figures="M5,3 L14,3 L19,8 L19,21 L5,21 Z M14,3 L14,8 L19,8" />
+    <SolidColorBrush x:Key="{x:Static SystemColors.WindowBrushKey}" Color="#183452" />
+    <SolidColorBrush x:Key="{x:Static SystemColors.ControlBrushKey}" Color="#183452" />
+    <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="#4B86B4" />
+    <SolidColorBrush x:Key="{x:Static SystemColors.HighlightTextBrushKey}" Color="#F1F7FC" />
+    <SolidColorBrush x:Key="{x:Static SystemColors.ControlTextBrushKey}" Color="#F1F7FC" />
     <DataTemplate DataType="{x:Type pages:SeafoodCategoryOptionViewModel}">
       <TextBlock Text="{Binding Name}"
                  Foreground="{StaticResource TextBrush}"
@@ -55,6 +66,9 @@
       <Setter Property="BorderBrush" Value="{StaticResource OutlineBrush}" />
       <Setter Property="BorderThickness" Value="0" />
       <Setter Property="Padding" Value="14,10" />
+      <Setter Property="MinHeight" Value="44" />
+      <Setter Property="FontSize" Value="16" />
+      <Setter Property="FontWeight" Value="SemiBold" />
       <Setter Property="Cursor" Value="Hand" />
       <Setter Property="FocusVisualStyle" Value="{x:Null}" />
       <Setter Property="Template">
@@ -64,7 +78,7 @@
                     Background="{TemplateBinding Background}"
                     BorderBrush="{TemplateBinding BorderBrush}"
                     BorderThickness="{TemplateBinding BorderThickness}"
-                    CornerRadius="12"
+                    CornerRadius="4"
                     SnapsToDevicePixels="True">
               <ContentPresenter HorizontalAlignment="Center"
                                 VerticalAlignment="Center"
@@ -85,6 +99,455 @@
           </ControlTemplate>
         </Setter.Value>
       </Setter>
+    </Style>
+
+    <Style x:Key="HmiAddButtonStyle" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+      <Setter Property="Background" Value="#4B86B4" />
+      <Setter Property="Foreground" Value="#F3F8FC" />
+      <Setter Property="BorderBrush" Value="#7FAFD2" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="FontSize" Value="18" />
+      <Setter Property="FontWeight" Value="Bold" />
+      <Setter Property="Padding" Value="24,10" />
+      <Setter Property="MinWidth" Value="150" />
+      <Setter Property="Height" Value="48" />
+    </Style>
+
+    <SolidColorBrush x:Key="SettingsEditorBackgroundBrush" Color="#071B2D" />
+    <SolidColorBrush x:Key="SettingsEditorCardBrush" Color="#081F33" />
+    <SolidColorBrush x:Key="SettingsEditorFieldBrush" Color="#09243A" />
+    <SolidColorBrush x:Key="SettingsEditorBorderBrush" Color="#24516F" />
+    <SolidColorBrush x:Key="SettingsEditorAccentBrush" Color="#18B8F2" />
+    <SolidColorBrush x:Key="SettingsEditorMutedBrush" Color="#8FA9C1" />
+
+    <Style x:Key="SettingsEditorCardStyle" TargetType="Border">
+      <Setter Property="Background" Value="{StaticResource SettingsEditorCardBrush}" />
+      <Setter Property="BorderBrush" Value="{StaticResource SettingsEditorBorderBrush}" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="CornerRadius" Value="4" />
+    </Style>
+
+    <Style x:Key="SettingsEditorInputFrameStyle" TargetType="Border">
+      <Setter Property="Background" Value="{StaticResource SettingsEditorFieldBrush}" />
+      <Setter Property="BorderBrush" Value="{StaticResource SettingsEditorBorderBrush}" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="CornerRadius" Value="4" />
+      <Setter Property="Padding" Value="14,0" />
+      <Setter Property="Height" Value="44" />
+    </Style>
+
+    <Style x:Key="SettingsEditorLabelStyle" TargetType="TextBlock">
+      <Setter Property="Foreground" Value="#EAF4FF" />
+      <Setter Property="FontFamily" Value="Microsoft YaHei UI" />
+      <Setter Property="FontSize" Value="15" />
+      <Setter Property="FontWeight" Value="SemiBold" />
+      <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+
+    <Style x:Key="SettingsEditorSectionTitleStyle" TargetType="TextBlock">
+      <Setter Property="Foreground" Value="{StaticResource SettingsEditorAccentBrush}" />
+      <Setter Property="FontFamily" Value="Microsoft YaHei UI" />
+      <Setter Property="FontSize" Value="17" />
+      <Setter Property="FontWeight" Value="SemiBold" />
+      <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+
+    <Style x:Key="SettingsEditorStatusTextStyle" TargetType="TextBlock">
+      <Setter Property="Foreground" Value="#F4B74A" />
+      <Setter Property="FontFamily" Value="Microsoft YaHei UI" />
+      <Setter Property="FontSize" Value="14" />
+      <Setter Property="VerticalAlignment" Value="Center" />
+      <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+    </Style>
+
+    <Style x:Key="SettingsEditorReturnButtonStyle" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+      <Setter Property="FontFamily" Value="Microsoft YaHei UI" />
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="Foreground" Value="#EAF4FF" />
+      <Setter Property="BorderBrush" Value="#315873" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="Height" Value="44" />
+      <Setter Property="MinWidth" Value="128" />
+      <Setter Property="Padding" Value="16,0" />
+      <Setter Property="FontSize" Value="15" />
+      <Setter Property="FontWeight" Value="Normal" />
+      <Setter Property="SnapsToDevicePixels" Value="True" />
+      <Setter Property="UseLayoutRounding" Value="True" />
+    </Style>
+
+    <Style x:Key="SettingsEditorPrimaryButtonStyle" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+      <Setter Property="FontFamily" Value="Microsoft YaHei UI" />
+      <Setter Property="Background" Value="#0D6FAE" />
+      <Setter Property="Foreground" Value="#FFFFFF" />
+      <Setter Property="BorderBrush" Value="#0D6FAE" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="Height" Value="44" />
+      <Setter Property="MinWidth" Value="160" />
+      <Setter Property="Padding" Value="16,0" />
+      <Setter Property="FontSize" Value="15" />
+      <Setter Property="FontWeight" Value="SemiBold" />
+      <Setter Property="SnapsToDevicePixels" Value="True" />
+      <Setter Property="UseLayoutRounding" Value="True" />
+    </Style>
+
+    <Style x:Key="SettingsEditorSecondaryButtonStyle" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+      <Setter Property="FontFamily" Value="Microsoft YaHei UI" />
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="Foreground" Value="#EAF4FF" />
+      <Setter Property="BorderBrush" Value="#315873" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="Height" Value="44" />
+      <Setter Property="MinWidth" Value="136" />
+      <Setter Property="Padding" Value="16,0" />
+      <Setter Property="FontSize" Value="15" />
+      <Setter Property="FontWeight" Value="Normal" />
+      <Setter Property="SnapsToDevicePixels" Value="True" />
+      <Setter Property="UseLayoutRounding" Value="True" />
+    </Style>
+
+    <Style x:Key="SettingsEditorDangerButtonStyle" TargetType="Button" BasedOn="{StaticResource SettingsEditorSecondaryButtonStyle}">
+      <Setter Property="Foreground" Value="#FF6675" />
+      <Setter Property="BorderBrush" Value="#8D3B4A" />
+      <Setter Property="MinWidth" Value="134" />
+    </Style>
+
+    <Style x:Key="SettingsDetailActionButtonStyle" TargetType="Button" BasedOn="{StaticResource SettingsEditorSecondaryButtonStyle}">
+      <Setter Property="Height" Value="44" />
+      <Setter Property="MinWidth" Value="124" />
+      <Setter Property="Padding" Value="14,0" />
+      <Setter Property="FontSize" Value="15" />
+      <Setter Property="FontWeight" Value="SemiBold" />
+      <Setter Property="Foreground" Value="#DCEAF5" />
+      <Setter Property="BorderBrush" Value="#315873" />
+    </Style>
+
+    <Style x:Key="SettingsDetailEditButtonStyle" TargetType="Button" BasedOn="{StaticResource SettingsDetailActionButtonStyle}">
+      <Setter Property="Foreground" Value="#6FCBFF" />
+      <Setter Property="BorderBrush" Value="#2679A8" />
+    </Style>
+
+    <Style x:Key="SettingsDetailPrimaryButtonStyle" TargetType="Button" BasedOn="{StaticResource SettingsDetailActionButtonStyle}">
+      <Setter Property="Background" Value="#0D6FAE" />
+      <Setter Property="Foreground" Value="#FFFFFF" />
+      <Setter Property="BorderBrush" Value="#0D6FAE" />
+    </Style>
+
+    <Style x:Key="SettingsDetailDangerButtonStyle" TargetType="Button" BasedOn="{StaticResource SettingsDetailActionButtonStyle}">
+      <Setter Property="Foreground" Value="#FF6675" />
+      <Setter Property="BorderBrush" Value="#8D3B4A" />
+    </Style>
+
+    <Style x:Key="SettingsDetailTableHeaderStyle" TargetType="DataGridColumnHeader">
+      <Setter Property="Height" Value="46" />
+      <Setter Property="Background" Value="#173A56" />
+      <Setter Property="Foreground" Value="#EAF4FF" />
+      <Setter Property="BorderBrush" Value="#24516F" />
+      <Setter Property="BorderThickness" Value="0,0,0,1" />
+      <Setter Property="Padding" Value="12,0" />
+      <Setter Property="FontFamily" Value="Microsoft YaHei UI" />
+      <Setter Property="FontSize" Value="16" />
+      <Setter Property="FontWeight" Value="SemiBold" />
+      <Setter Property="VerticalContentAlignment" Value="Center" />
+      <Setter Property="HorizontalContentAlignment" Value="Center" />
+    </Style>
+
+    <Style x:Key="SettingsDetailTableTextStyle" TargetType="TextBlock">
+      <Setter Property="HorizontalAlignment" Value="Center" />
+      <Setter Property="VerticalAlignment" Value="Center" />
+      <Setter Property="TextAlignment" Value="Center" />
+      <Setter Property="FontFamily" Value="Microsoft YaHei UI" />
+      <Setter Property="FontSize" Value="15" />
+      <Setter Property="Foreground" Value="#EAF4FF" />
+      <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+    </Style>
+
+    <Style x:Key="SettingsEditorIconButtonStyle" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+      <Setter Property="Width" Value="48" />
+      <Setter Property="Height" Value="44" />
+      <Setter Property="MinWidth" Value="48" />
+      <Setter Property="MinHeight" Value="44" />
+      <Setter Property="Padding" Value="0" />
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="Foreground" Value="#D7E8F7" />
+      <Setter Property="BorderBrush" Value="{StaticResource SettingsEditorBorderBrush}" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="FontWeight" Value="Normal" />
+      <Setter Property="SnapsToDevicePixels" Value="True" />
+      <Setter Property="UseLayoutRounding" Value="True" />
+    </Style>
+
+    <Style x:Key="SettingsEditorCompactIconButtonStyle" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+      <Setter Property="Width" Value="36" />
+      <Setter Property="Height" Value="36" />
+      <Setter Property="MinWidth" Value="36" />
+      <Setter Property="MinHeight" Value="36" />
+      <Setter Property="Padding" Value="0" />
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="Foreground" Value="#D7E8F7" />
+      <Setter Property="BorderThickness" Value="0" />
+      <Setter Property="FontWeight" Value="Normal" />
+    </Style>
+
+    <Style x:Key="HmiTableActionButtonStyle" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="Foreground" Value="#D8E8F7" />
+      <Setter Property="BorderBrush" Value="#456780" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="FontSize" Value="16" />
+      <Setter Property="FontWeight" Value="SemiBold" />
+      <Setter Property="Padding" Value="16,7" />
+      <Setter Property="MinWidth" Value="78" />
+      <Setter Property="Height" Value="36" />
+    </Style>
+
+    <Style x:Key="HmiTableDangerButtonStyle" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="Foreground" Value="#FF9A9A" />
+      <Setter Property="BorderBrush" Value="#B84A52" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="FontSize" Value="16" />
+      <Setter Property="FontWeight" Value="SemiBold" />
+      <Setter Property="Padding" Value="16,7" />
+      <Setter Property="MinWidth" Value="78" />
+      <Setter Property="Height" Value="36" />
+    </Style>
+
+    <Style x:Key="HmiPagerButtonStyle" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+      <Setter Property="Background" Value="#244965" />
+      <Setter Property="Foreground" Value="#D8E8F7" />
+      <Setter Property="BorderBrush" Value="#52728B" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="FontSize" Value="16" />
+      <Setter Property="Padding" Value="14,6" />
+      <Setter Property="MinWidth" Value="70" />
+      <Setter Property="Height" Value="34" />
+    </Style>
+
+    <Style x:Key="SettingsListAddButtonStyle" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+      <Setter Property="Width" Value="136" />
+      <Setter Property="Height" Value="44" />
+      <Setter Property="Background" Value="#147CC1" />
+      <Setter Property="Foreground" Value="#EAF4FF" />
+      <Setter Property="BorderBrush" Value="#147CC1" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="FontSize" Value="15" />
+      <Setter Property="FontWeight" Value="SemiBold" />
+      <Setter Property="Padding" Value="14,0" />
+    </Style>
+
+    <Style x:Key="SettingsListActionButtonStyle" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+      <Setter Property="Width" Value="34" />
+      <Setter Property="Height" Value="34" />
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="Foreground" Value="#79B9DF" />
+      <Setter Property="BorderBrush" Value="Transparent" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="Padding" Value="0" />
+      <Setter Property="Template">
+        <Setter.Value>
+          <ControlTemplate TargetType="Button">
+            <Border x:Name="Chrome"
+                    Background="{TemplateBinding Background}"
+                    BorderBrush="{TemplateBinding BorderBrush}"
+                    BorderThickness="{TemplateBinding BorderThickness}"
+                    CornerRadius="4">
+              <Viewbox Width="18" Height="18" HorizontalAlignment="Center" VerticalAlignment="Center">
+                <Path Width="24"
+                      Height="24"
+                      Data="{TemplateBinding Tag}"
+                      Fill="Transparent"
+                      Stroke="{TemplateBinding Foreground}"
+                      StrokeThickness="1.7"
+                      StrokeStartLineCap="Round"
+                      StrokeEndLineCap="Round"
+                      StrokeLineJoin="Round" />
+              </Viewbox>
+            </Border>
+            <ControlTemplate.Triggers>
+              <Trigger Property="IsMouseOver" Value="True">
+                <Setter Property="Foreground" Value="#62C9FF" />
+                <Setter TargetName="Chrome" Property="Background" Value="#12334D" />
+                <Setter TargetName="Chrome" Property="BorderBrush" Value="#3185B5" />
+              </Trigger>
+              <Trigger Property="IsPressed" Value="True">
+                <Setter TargetName="Chrome" Property="Background" Value="#174765" />
+                <Setter TargetName="Chrome" Property="Opacity" Value="0.86" />
+              </Trigger>
+              <Trigger Property="IsEnabled" Value="False">
+                <Setter TargetName="Chrome" Property="Opacity" Value="0.38" />
+              </Trigger>
+            </ControlTemplate.Triggers>
+          </ControlTemplate>
+        </Setter.Value>
+      </Setter>
+    </Style>
+
+    <Style x:Key="SettingsListDangerButtonStyle" TargetType="Button" BasedOn="{StaticResource SettingsListActionButtonStyle}">
+      <Setter Property="Foreground" Value="#94A8B8" />
+      <Setter Property="BorderBrush" Value="Transparent" />
+      <Setter Property="Template">
+        <Setter.Value>
+          <ControlTemplate TargetType="Button">
+            <Border x:Name="Chrome"
+                    Background="{TemplateBinding Background}"
+                    BorderBrush="{TemplateBinding BorderBrush}"
+                    BorderThickness="{TemplateBinding BorderThickness}"
+                    CornerRadius="4">
+              <Viewbox Width="18" Height="18" HorizontalAlignment="Center" VerticalAlignment="Center">
+                <Path Width="24"
+                      Height="24"
+                      Data="{TemplateBinding Tag}"
+                      Fill="Transparent"
+                      Stroke="{TemplateBinding Foreground}"
+                      StrokeThickness="1.7"
+                      StrokeStartLineCap="Round"
+                      StrokeEndLineCap="Round"
+                      StrokeLineJoin="Round" />
+              </Viewbox>
+            </Border>
+            <ControlTemplate.Triggers>
+              <Trigger Property="IsMouseOver" Value="True">
+                <Setter Property="Foreground" Value="#FF6975" />
+                <Setter TargetName="Chrome" Property="Background" Value="#321E29" />
+                <Setter TargetName="Chrome" Property="BorderBrush" Value="#8F4052" />
+              </Trigger>
+              <Trigger Property="IsPressed" Value="True">
+                <Setter TargetName="Chrome" Property="Background" Value="#4A222D" />
+                <Setter TargetName="Chrome" Property="Opacity" Value="0.86" />
+              </Trigger>
+              <Trigger Property="IsEnabled" Value="False">
+                <Setter TargetName="Chrome" Property="Opacity" Value="0.38" />
+              </Trigger>
+            </ControlTemplate.Triggers>
+          </ControlTemplate>
+        </Setter.Value>
+      </Setter>
+    </Style>
+
+    <Style x:Key="SettingsListPagerButtonStyle" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+      <Setter Property="MinWidth" Value="98" />
+      <Setter Property="Height" Value="42" />
+      <Setter Property="Background" Value="#081526" />
+      <Setter Property="Foreground" Value="#8FA9C1" />
+      <Setter Property="BorderBrush" Value="#24516F" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="FontSize" Value="16" />
+      <Setter Property="Padding" Value="14,0" />
+    </Style>
+
+    <Style x:Key="SettingsListPageButtonStyle" TargetType="Button" BasedOn="{StaticResource SettingsListPagerButtonStyle}">
+      <Setter Property="MinWidth" Value="48" />
+      <Setter Property="Width" Value="48" />
+      <Setter Property="Background" Value="#1688E8" />
+      <Setter Property="Foreground" Value="#FFFFFF" />
+      <Setter Property="BorderBrush" Value="#1688E8" />
+      <Setter Property="FontWeight" Value="Bold" />
+    </Style>
+
+    <Style x:Key="UnifiedPagerButtonStyle" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+      <Setter Property="Width" Value="38" />
+      <Setter Property="Height" Value="34" />
+      <Setter Property="MinWidth" Value="38" />
+      <Setter Property="MinHeight" Value="34" />
+      <Setter Property="Padding" Value="0" />
+      <Setter Property="Background" Value="#081D31" />
+      <Setter Property="Foreground" Value="#D7E6F2" />
+      <Setter Property="BorderBrush" Value="#315873" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="FontSize" Value="18" />
+      <Setter Property="FontFamily" Value="Segoe UI Symbol" />
+      <Setter Property="FontWeight" Value="Normal" />
+      <Style.Triggers>
+        <Trigger Property="IsEnabled" Value="False">
+          <Setter Property="Opacity" Value="0.48" />
+          <Setter Property="Foreground" Value="#7890A4" />
+          <Setter Property="BorderBrush" Value="#213F56" />
+        </Trigger>
+      </Style.Triggers>
+    </Style>
+
+    <Style x:Key="SettingsListColumnHeaderStyle" TargetType="DataGridColumnHeader">
+      <Setter Property="Height" Value="46" />
+      <Setter Property="Background" Value="#173A56" />
+      <Setter Property="Foreground" Value="#EAF4FF" />
+      <Setter Property="BorderBrush" Value="#24516F" />
+      <Setter Property="BorderThickness" Value="0,0,0,1" />
+      <Setter Property="Padding" Value="16,0" />
+      <Setter Property="FontFamily" Value="Microsoft YaHei UI" />
+      <Setter Property="FontSize" Value="16" />
+      <Setter Property="FontWeight" Value="SemiBold" />
+      <Setter Property="VerticalContentAlignment" Value="Center" />
+      <Setter Property="HorizontalContentAlignment" Value="Left" />
+    </Style>
+
+    <Style x:Key="SettingsListCellStyle" TargetType="DataGridCell">
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="Foreground" Value="#EAF4FF" />
+      <Setter Property="BorderBrush" Value="#24516F" />
+      <Setter Property="BorderThickness" Value="0,0,0,1" />
+      <Setter Property="Padding" Value="16,0" />
+      <Setter Property="FontFamily" Value="Microsoft YaHei UI" />
+      <Setter Property="FontSize" Value="16" />
+      <Setter Property="FontWeight" Value="Normal" />
+      <Setter Property="VerticalContentAlignment" Value="Center" />
+      <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+      <Style.Triggers>
+        <Trigger Property="IsSelected" Value="True">
+          <Setter Property="Background" Value="#123A58" />
+        </Trigger>
+      </Style.Triggers>
+    </Style>
+
+    <Style x:Key="SettingsListTextCellStyle" TargetType="TextBlock">
+      <Setter Property="VerticalAlignment" Value="Center" />
+      <Setter Property="HorizontalAlignment" Value="Stretch" />
+      <Setter Property="TextAlignment" Value="Left" />
+      <Setter Property="Margin" Value="16,0" />
+      <Setter Property="FontFamily" Value="Microsoft YaHei UI" />
+      <Setter Property="FontSize" Value="16" />
+      <Setter Property="FontWeight" Value="Normal" />
+      <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+      <Setter Property="TextWrapping" Value="NoWrap" />
+    </Style>
+
+    <Style x:Key="SettingsListRowStyle" TargetType="DataGridRow">
+      <Setter Property="Height" Value="54" />
+      <Setter Property="MinHeight" Value="54" />
+      <Setter Property="MaxHeight" Value="54" />
+      <Setter Property="Background" Value="#092037" />
+      <Setter Property="Foreground" Value="#EAF4FF" />
+      <Setter Property="BorderThickness" Value="0" />
+      <Setter Property="VerticalContentAlignment" Value="Center" />
+      <Style.Triggers>
+        <Trigger Property="AlternationIndex" Value="1">
+          <Setter Property="Background" Value="#0B253D" />
+        </Trigger>
+        <Trigger Property="IsSelected" Value="True">
+          <Setter Property="Background" Value="#123A58" />
+        </Trigger>
+      </Style.Triggers>
+    </Style>
+
+    <Style x:Key="SettingsListDataGridStyle" TargetType="DataGrid">
+      <Setter Property="Background" Value="#081D31" />
+      <Setter Property="Foreground" Value="#EAF4FF" />
+      <Setter Property="BorderBrush" Value="#24516F" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="HeadersVisibility" Value="Column" />
+      <Setter Property="GridLinesVisibility" Value="Horizontal" />
+      <Setter Property="HorizontalGridLinesBrush" Value="#24516F" />
+      <Setter Property="RowHeaderWidth" Value="0" />
+      <Setter Property="FontFamily" Value="Microsoft YaHei UI" />
+      <Setter Property="ColumnHeaderStyle" Value="{StaticResource SettingsListColumnHeaderStyle}" />
+      <Setter Property="CellStyle" Value="{StaticResource SettingsListCellStyle}" />
+      <Setter Property="RowStyle" Value="{StaticResource SettingsListRowStyle}" />
+      <Setter Property="AlternationCount" Value="2" />
+      <Setter Property="RowHeight" Value="54" />
+      <Setter Property="ColumnHeaderHeight" Value="46" />
+      <Setter Property="CanUserResizeRows" Value="False" />
+      <Setter Property="CanUserResizeColumns" Value="False" />
+      <Setter Property="CanUserReorderColumns" Value="False" />
+      <Setter Property="CanUserSortColumns" Value="False" />
     </Style>
 
     <Style TargetType="TextBox">
@@ -119,9 +582,10 @@
     <Style TargetType="ComboBox">
       <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
       <Setter Property="Background" Value="{StaticResource SurfaceSoftBrush}" />
-      <Setter Property="BorderBrush" Value="{StaticResource OutlineBrush}" />
+      <Setter Property="BorderBrush" Value="#6B879C" />
       <Setter Property="BorderThickness" Value="1" />
       <Setter Property="Padding" Value="14,10" />
+      <Setter Property="MinHeight" Value="46" />
       <Setter Property="SnapsToDevicePixels" Value="True" />
       <Setter Property="Template">
         <Setter.Value>
@@ -131,7 +595,7 @@
                       Background="{TemplateBinding Background}"
                       BorderBrush="{TemplateBinding BorderBrush}"
                       BorderThickness="{TemplateBinding BorderThickness}"
-                      CornerRadius="12">
+                      CornerRadius="4">
                 <Grid>
                   <ContentPresenter Margin="14,0,36,0"
                                     VerticalAlignment="Center"
@@ -156,7 +620,7 @@
                 <Border Background="{StaticResource PanelSecondaryBackground}"
                         BorderBrush="{StaticResource OutlineBrush}"
                         BorderThickness="1"
-                        CornerRadius="12"
+                        CornerRadius="4"
                         Margin="0,8,0,0"
                         MinWidth="{Binding ActualWidth, RelativeSource={RelativeSource TemplatedParent}}">
                   <ScrollViewer Margin="6"
@@ -194,7 +658,7 @@
           <ControlTemplate TargetType="ComboBoxItem">
             <Border x:Name="ItemBorder"
                     Background="{TemplateBinding Background}"
-                    CornerRadius="8"
+                    CornerRadius="3"
                     Margin="0,2,0,2">
               <ContentPresenter Margin="{TemplateBinding Padding}"
                                 TextElement.Foreground="{TemplateBinding Foreground}" />
@@ -212,51 +676,143 @@
       </Setter>
     </Style>
 
+    <Style x:Key="SettingsListSearchContainerStyle" TargetType="Border">
+      <Setter Property="Height" Value="44" />
+      <Setter Property="Background" Value="#081D31" />
+      <Setter Property="BorderBrush" Value="#315873" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="CornerRadius" Value="4" />
+      <Setter Property="Padding" Value="13,0" />
+      <Style.Triggers>
+        <Trigger Property="IsMouseOver" Value="True">
+          <Setter Property="BorderBrush" Value="#3C789B" />
+        </Trigger>
+        <Trigger Property="IsKeyboardFocusWithin" Value="True">
+          <Setter Property="BorderBrush" Value="#25B9F3" />
+        </Trigger>
+      </Style.Triggers>
+    </Style>
+
+    <Style x:Key="SettingsListSearchTextBoxStyle"
+           TargetType="TextBox"
+           BasedOn="{StaticResource {x:Type TextBox}}">
+      <Setter Property="Height" Value="42" />
+      <Setter Property="Padding" Value="0" />
+      <Setter Property="FontFamily" Value="Microsoft YaHei UI" />
+      <Setter Property="FontSize" Value="14" />
+      <Setter Property="FontWeight" Value="Normal" />
+      <Setter Property="Foreground" Value="#DCEAF5" />
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="BorderThickness" Value="0" />
+      <Setter Property="VerticalContentAlignment" Value="Center" />
+      <Setter Property="Template">
+        <Setter.Value>
+          <ControlTemplate TargetType="TextBox">
+            <Grid>
+              <ScrollViewer x:Name="PART_ContentHost"
+                            VerticalAlignment="Center" />
+              <TextBlock x:Name="Placeholder"
+                         Text="{TemplateBinding Tag}"
+                         Foreground="#6F8BA3"
+                         FontFamily="Microsoft YaHei UI"
+                         FontSize="14"
+                         IsHitTestVisible="False"
+                         Visibility="Collapsed"
+                         VerticalAlignment="Center" />
+            </Grid>
+            <ControlTemplate.Triggers>
+              <Trigger Property="Text" Value="">
+                <Setter TargetName="Placeholder" Property="Visibility" Value="Visible" />
+              </Trigger>
+              <Trigger Property="Text" Value="{x:Null}">
+                <Setter TargetName="Placeholder" Property="Visibility" Value="Visible" />
+              </Trigger>
+              <Trigger Property="IsEnabled" Value="False">
+                <Setter Property="Opacity" Value="0.45" />
+              </Trigger>
+            </ControlTemplate.Triggers>
+          </ControlTemplate>
+        </Setter.Value>
+      </Setter>
+    </Style>
+
+    <Style x:Key="SettingsListFilterLabelStyle" TargetType="TextBlock">
+      <Setter Property="Foreground" Value="#8FA9C1" />
+      <Setter Property="FontFamily" Value="Microsoft YaHei UI" />
+      <Setter Property="FontSize" Value="13" />
+      <Setter Property="FontWeight" Value="SemiBold" />
+      <Setter Property="VerticalAlignment" Value="Center" />
+      <Setter Property="Margin" Value="0,0,10,0" />
+    </Style>
+
+    <Style x:Key="SettingsListFilterComboBoxStyle"
+           TargetType="ComboBox"
+           BasedOn="{StaticResource {x:Type ComboBox}}">
+      <Setter Property="Height" Value="44" />
+      <Setter Property="MinHeight" Value="44" />
+      <Setter Property="Padding" Value="14,0" />
+      <Setter Property="FontFamily" Value="Microsoft YaHei UI" />
+      <Setter Property="FontSize" Value="14" />
+      <Setter Property="FontWeight" Value="Normal" />
+      <Setter Property="Foreground" Value="#DCEAF5" />
+      <Setter Property="Background" Value="#081D31" />
+      <Setter Property="BorderBrush" Value="#315873" />
+      <Setter Property="BorderThickness" Value="1" />
+    </Style>
+
     <Style TargetType="DataGrid">
-      <Setter Property="Background" Value="{StaticResource SurfaceSoftBrush}" />
+      <Setter Property="Background" Value="#2E5F81" />
       <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
-      <Setter Property="RowBackground" Value="{StaticResource SurfaceSoftBrush}" />
-      <Setter Property="AlternatingRowBackground" Value="{StaticResource SurfaceBrush}" />
+      <Setter Property="RowBackground" Value="#2E5F81" />
+      <Setter Property="AlternatingRowBackground" Value="#356A8D" />
+      <Setter Property="FontSize" Value="17" />
+      <Setter Property="RowHeight" Value="38" />
+      <Setter Property="ColumnHeaderHeight" Value="46" />
       <Setter Property="GridLinesVisibility" Value="Horizontal" />
-      <Setter Property="HorizontalGridLinesBrush" Value="{StaticResource OutlineBrush}" />
-      <Setter Property="VerticalGridLinesBrush" Value="{StaticResource OutlineBrush}" />
+      <Setter Property="HorizontalGridLinesBrush" Value="#8DABBF" />
+      <Setter Property="VerticalGridLinesBrush" Value="#8DABBF" />
       <Setter Property="HeadersVisibility" Value="Column" />
       <Setter Property="BorderThickness" Value="0" />
     </Style>
 
     <Style TargetType="DataGridColumnHeader">
-      <Setter Property="Background" Value="{StaticResource PanelSecondaryBackground}" />
+      <Setter Property="Background" Value="#234761" />
       <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
-      <Setter Property="BorderBrush" Value="{StaticResource OutlineBrush}" />
+      <Setter Property="BorderBrush" Value="#4F6C82" />
       <Setter Property="BorderThickness" Value="0,0,0,1" />
       <Setter Property="Padding" Value="12,10" />
+      <Setter Property="FontSize" Value="17" />
       <Setter Property="FontWeight" Value="SemiBold" />
+      <Setter Property="VerticalContentAlignment" Value="Center" />
     </Style>
 
     <Style TargetType="DataGridCell">
       <Setter Property="Background" Value="Transparent" />
       <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
-      <Setter Property="BorderBrush" Value="{StaticResource OutlineBrush}" />
+      <Setter Property="BorderBrush" Value="#8DABBF" />
       <Setter Property="BorderThickness" Value="0,0,0,1" />
       <Setter Property="Padding" Value="10,8" />
+      <Setter Property="FontSize" Value="17" />
+      <Setter Property="VerticalContentAlignment" Value="Center" />
       <Style.Triggers>
         <Trigger Property="IsSelected" Value="True">
-          <Setter Property="Background" Value="#2B5074" />
+          <Setter Property="Background" Value="#263F5A" />
           <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
         </Trigger>
       </Style.Triggers>
     </Style>
 
     <Style TargetType="DataGridRow">
-      <Setter Property="Background" Value="{StaticResource SurfaceSoftBrush}" />
+      <Setter Property="Background" Value="#2E5F81" />
       <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
       <Setter Property="BorderThickness" Value="0" />
+      <Setter Property="VerticalContentAlignment" Value="Center" />
       <Style.Triggers>
         <Trigger Property="IsMouseOver" Value="True">
-          <Setter Property="Background" Value="#243D58" />
+          <Setter Property="Background" Value="#32536F" />
         </Trigger>
         <Trigger Property="IsSelected" Value="True">
-          <Setter Property="Background" Value="#315B82" />
+          <Setter Property="Background" Value="#263F5A" />
           <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
         </Trigger>
       </Style.Triggers>

@@ -11,7 +11,7 @@ public sealed class SqliteSeafoodProductRepository(SqliteConnectionFactory conne
         await connection.OpenAsync(cancellationToken);
         var command = connection.CreateCommand();
         command.CommandText = """
-            SELECT id, code, name, is_enabled
+            SELECT id, code, name, is_enabled, classes_file_path, label_map_json, predict_config_path
             FROM seafood_products
             ORDER BY name;
             """;
@@ -24,7 +24,10 @@ public sealed class SqliteSeafoodProductRepository(SqliteConnectionFactory conne
                 Guid.Parse(reader.GetString(0)),
                 reader.GetString(1),
                 reader.GetString(2),
-                reader.GetInt32(3) == 1));
+                reader.GetInt32(3) == 1,
+                reader.IsDBNull(4) ? string.Empty : reader.GetString(4),
+                reader.IsDBNull(5) ? "{}" : reader.GetString(5),
+                reader.IsDBNull(6) ? string.Empty : reader.GetString(6)));
         }
 
         return results;
@@ -36,7 +39,7 @@ public sealed class SqliteSeafoodProductRepository(SqliteConnectionFactory conne
         await connection.OpenAsync(cancellationToken);
         var command = connection.CreateCommand();
         command.CommandText = """
-            SELECT id, code, name, is_enabled
+            SELECT id, code, name, is_enabled, classes_file_path, label_map_json, predict_config_path
             FROM seafood_products
             WHERE id = $id
             LIMIT 1;
@@ -53,7 +56,10 @@ public sealed class SqliteSeafoodProductRepository(SqliteConnectionFactory conne
             Guid.Parse(reader.GetString(0)),
             reader.GetString(1),
             reader.GetString(2),
-            reader.GetInt32(3) == 1);
+            reader.GetInt32(3) == 1,
+            reader.IsDBNull(4) ? string.Empty : reader.GetString(4),
+            reader.IsDBNull(5) ? "{}" : reader.GetString(5),
+            reader.IsDBNull(6) ? string.Empty : reader.GetString(6));
     }
 
     public async Task<SeafoodProduct> UpsertAsync(SeafoodProduct product, CancellationToken cancellationToken)
@@ -75,17 +81,23 @@ public sealed class SqliteSeafoodProductRepository(SqliteConnectionFactory conne
 
         var command = connection.CreateCommand();
         command.CommandText = """
-            INSERT INTO seafood_products (id, code, name, is_enabled)
-            VALUES ($id, $code, $name, $enabled)
+            INSERT INTO seafood_products (id, code, name, is_enabled, classes_file_path, label_map_json, predict_config_path)
+            VALUES ($id, $code, $name, $enabled, $classesFilePath, $labelMapJson, $predictConfigPath)
             ON CONFLICT(id) DO UPDATE SET
                 code = excluded.code,
                 name = excluded.name,
-                is_enabled = excluded.is_enabled;
+                is_enabled = excluded.is_enabled,
+                classes_file_path = excluded.classes_file_path,
+                label_map_json = excluded.label_map_json,
+                predict_config_path = excluded.predict_config_path;
             """;
         command.Parameters.AddWithValue("$id", product.Id.ToString());
         command.Parameters.AddWithValue("$code", product.Code);
         command.Parameters.AddWithValue("$name", product.Name);
         command.Parameters.AddWithValue("$enabled", product.IsEnabled ? 1 : 0);
+        command.Parameters.AddWithValue("$classesFilePath", product.ClassesFilePath);
+        command.Parameters.AddWithValue("$labelMapJson", product.LabelMapJson);
+        command.Parameters.AddWithValue("$predictConfigPath", product.PredictConfigPath);
         await command.ExecuteNonQueryAsync(cancellationToken);
         return product;
     }
@@ -115,7 +127,7 @@ public sealed class SqliteSeafoodProductRepository(SqliteConnectionFactory conne
     {
         var command = connection.CreateCommand();
         command.CommandText = """
-            SELECT id, code, name, is_enabled
+            SELECT id, code, name, is_enabled, classes_file_path, label_map_json, predict_config_path
             FROM seafood_products
             WHERE id = $id
             LIMIT 1;
@@ -131,14 +143,17 @@ public sealed class SqliteSeafoodProductRepository(SqliteConnectionFactory conne
             Guid.Parse(reader.GetString(0)),
             reader.GetString(1),
             reader.GetString(2),
-            reader.GetInt32(3) == 1);
+            reader.GetInt32(3) == 1,
+            reader.IsDBNull(4) ? string.Empty : reader.GetString(4),
+            reader.IsDBNull(5) ? "{}" : reader.GetString(5),
+            reader.IsDBNull(6) ? string.Empty : reader.GetString(6));
     }
 
     private static async Task<SeafoodProduct?> FindByCodeAsync(SqliteConnection connection, string code, CancellationToken cancellationToken)
     {
         var command = connection.CreateCommand();
         command.CommandText = """
-            SELECT id, code, name, is_enabled
+            SELECT id, code, name, is_enabled, classes_file_path, label_map_json, predict_config_path
             FROM seafood_products
             WHERE code = $code
             LIMIT 1;
@@ -154,7 +169,10 @@ public sealed class SqliteSeafoodProductRepository(SqliteConnectionFactory conne
             Guid.Parse(reader.GetString(0)),
             reader.GetString(1),
             reader.GetString(2),
-            reader.GetInt32(3) == 1);
+            reader.GetInt32(3) == 1,
+            reader.IsDBNull(4) ? string.Empty : reader.GetString(4),
+            reader.IsDBNull(5) ? "{}" : reader.GetString(5),
+            reader.IsDBNull(6) ? string.Empty : reader.GetString(6));
     }
 }
 
@@ -230,8 +248,10 @@ public sealed class SqliteChannelConfigRepository(SqliteConnectionFactory connec
         await connection.OpenAsync(cancellationToken);
         var command = connection.CreateCommand();
         command.CommandText = """
-            SELECT id, channel_no, name, seafood_product_id, model_version_id, defect_handling_action,
-                   image_width, image_height, conveyor_speed, xray_voltage, xray_current, confidence_threshold, is_enabled
+            SELECT id, channel_no, name, seafood_product_id, model_version_id, model_path, defect_handling_action,
+                   conveyor_speed, confidence_threshold, is_enabled,
+                   last_runtime_predict_config_path, last_runtime_output_directory, camera_to_eject_distance_mm,
+                   mm_per_pixel_y, software_latency_ms, actuator_delay_ms, horizontal_lane_mapping_json
             FROM channel_configs
             ORDER BY channel_no;
             """;
@@ -245,8 +265,10 @@ public sealed class SqliteChannelConfigRepository(SqliteConnectionFactory connec
         await connection.OpenAsync(cancellationToken);
         var command = connection.CreateCommand();
         command.CommandText = """
-            SELECT id, channel_no, name, seafood_product_id, model_version_id, defect_handling_action,
-                   image_width, image_height, conveyor_speed, xray_voltage, xray_current, confidence_threshold, is_enabled
+            SELECT id, channel_no, name, seafood_product_id, model_version_id, model_path, defect_handling_action,
+                   conveyor_speed, confidence_threshold, is_enabled,
+                   last_runtime_predict_config_path, last_runtime_output_directory, camera_to_eject_distance_mm,
+                   mm_per_pixel_y, software_latency_ms, actuator_delay_ms, horizontal_lane_mapping_json
             FROM channel_configs
             WHERE id = $id
             LIMIT 1;
@@ -264,39 +286,49 @@ public sealed class SqliteChannelConfigRepository(SqliteConnectionFactory connec
         var command = connection.CreateCommand();
         command.CommandText = """
             INSERT INTO channel_configs (
-                id, channel_no, name, seafood_product_id, model_version_id, defect_handling_action,
-                image_width, image_height, conveyor_speed, xray_voltage, xray_current, confidence_threshold, is_enabled
+                id, channel_no, name, seafood_product_id, model_version_id, model_path, defect_handling_action,
+                conveyor_speed, confidence_threshold, is_enabled, last_runtime_predict_config_path, last_runtime_output_directory, camera_to_eject_distance_mm,
+                mm_per_pixel_y, software_latency_ms, actuator_delay_ms, horizontal_lane_mapping_json
             ) VALUES (
-                $id, $channelNo, $name, $productId, $modelVersionId, $action,
-                $imageWidth, $imageHeight, $speed, $voltage, $current, $confidenceThreshold, $enabled
+                $id, $channelNo, $name, $productId, $modelVersionId, $modelPath, $action,
+                $speed, $confidenceThreshold, $enabled, $lastRuntimePredictConfigPath, $lastRuntimeOutputDirectory, $cameraToEjectDistanceMm,
+                $millimetersPerPixelY, $softwareLatencyMs, $actuatorDelayMs, $horizontalLaneMappingJson
             )
             ON CONFLICT(id) DO UPDATE SET
                 channel_no = excluded.channel_no,
                 name = excluded.name,
                 seafood_product_id = excluded.seafood_product_id,
                 model_version_id = excluded.model_version_id,
+                model_path = excluded.model_path,
                 defect_handling_action = excluded.defect_handling_action,
-                image_width = excluded.image_width,
-                image_height = excluded.image_height,
                 conveyor_speed = excluded.conveyor_speed,
-                xray_voltage = excluded.xray_voltage,
-                xray_current = excluded.xray_current,
                 confidence_threshold = excluded.confidence_threshold,
-                is_enabled = excluded.is_enabled;
+                is_enabled = excluded.is_enabled,
+                last_runtime_predict_config_path = excluded.last_runtime_predict_config_path,
+                last_runtime_output_directory = excluded.last_runtime_output_directory,
+                camera_to_eject_distance_mm = excluded.camera_to_eject_distance_mm,
+                mm_per_pixel_y = excluded.mm_per_pixel_y,
+                software_latency_ms = excluded.software_latency_ms,
+                actuator_delay_ms = excluded.actuator_delay_ms,
+                horizontal_lane_mapping_json = excluded.horizontal_lane_mapping_json;
             """;
         command.Parameters.AddWithValue("$id", channelConfig.Id.ToString());
         command.Parameters.AddWithValue("$channelNo", channelConfig.ChannelNo);
         command.Parameters.AddWithValue("$name", channelConfig.Name);
         command.Parameters.AddWithValue("$productId", channelConfig.SeafoodProductId.ToString());
         command.Parameters.AddWithValue("$modelVersionId", channelConfig.ModelVersionId?.ToString() ?? (object)DBNull.Value);
+        command.Parameters.AddWithValue("$modelPath", channelConfig.ModelPath);
         command.Parameters.AddWithValue("$action", (int)channelConfig.DefectHandlingAction);
-        command.Parameters.AddWithValue("$imageWidth", channelConfig.ImageWidth);
-        command.Parameters.AddWithValue("$imageHeight", channelConfig.ImageHeight);
-        command.Parameters.AddWithValue("$speed", channelConfig.ConveyorSpeedMetersPerSecond);
-        command.Parameters.AddWithValue("$voltage", channelConfig.XrayVoltageKv);
-        command.Parameters.AddWithValue("$current", channelConfig.XrayCurrentMa);
+        command.Parameters.AddWithValue("$speed", MachineRuntimeDefaults.ConveyorSpeedMetersPerSecond);
         command.Parameters.AddWithValue("$confidenceThreshold", channelConfig.ConfidenceThreshold);
         command.Parameters.AddWithValue("$enabled", channelConfig.IsEnabled ? 1 : 0);
+        command.Parameters.AddWithValue("$lastRuntimePredictConfigPath", (object?)channelConfig.LastRuntimePredictConfigPath ?? DBNull.Value);
+        command.Parameters.AddWithValue("$lastRuntimeOutputDirectory", (object?)channelConfig.LastRuntimeOutputDirectory ?? DBNull.Value);
+        command.Parameters.AddWithValue("$cameraToEjectDistanceMm", channelConfig.CameraToEjectDistanceMillimeters);
+        command.Parameters.AddWithValue("$millimetersPerPixelY", channelConfig.MillimetersPerPixelY);
+        command.Parameters.AddWithValue("$softwareLatencyMs", channelConfig.SoftwareLatencyMilliseconds);
+        command.Parameters.AddWithValue("$actuatorDelayMs", channelConfig.ActuatorDelayMilliseconds);
+        command.Parameters.AddWithValue("$horizontalLaneMappingJson", channelConfig.HorizontalLaneMappingJson);
         await command.ExecuteNonQueryAsync(cancellationToken);
         return channelConfig;
     }
@@ -323,14 +355,17 @@ public sealed class SqliteChannelConfigRepository(SqliteConnectionFactory connec
                 reader.GetString(2),
                 Guid.Parse(reader.GetString(3)),
                 reader.IsDBNull(4) ? null : Guid.Parse(reader.GetString(4)),
-                (DefectHandlingAction)reader.GetInt32(5),
-                reader.GetInt32(6),
-                reader.GetInt32(7),
+                reader.GetString(5),
+                (DefectHandlingAction)reader.GetInt32(6),
                 Convert.ToDecimal(reader.GetDouble(8)),
-                Convert.ToDecimal(reader.GetDouble(9)),
-                Convert.ToDecimal(reader.GetDouble(10)),
-                Convert.ToDecimal(reader.GetDouble(11)),
-                reader.GetInt32(12) == 1));
+                reader.GetInt32(9) == 1,
+                reader.IsDBNull(10) ? null : reader.GetString(10),
+                reader.IsDBNull(11) ? null : reader.GetString(11),
+                Convert.ToDecimal(reader.GetDouble(12)),
+                Convert.ToDecimal(reader.GetDouble(13)),
+                reader.GetInt32(14),
+                reader.GetInt32(15),
+                reader.GetString(16)));
         }
 
         return results;

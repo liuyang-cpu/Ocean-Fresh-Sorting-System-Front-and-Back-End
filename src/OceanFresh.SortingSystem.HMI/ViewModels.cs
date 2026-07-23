@@ -4,6 +4,7 @@ using System.IO;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
+using OceanFresh.SortingSystem.Application;
 using OceanFresh.SortingSystem.Domain;
 using System.Windows.Input;
 using System.Windows;
@@ -78,41 +79,45 @@ public sealed class AsyncRelayCommand(Func<Task> executeAsync) : ICommand
 
 public sealed class MainWindowViewModel : ViewModelBase
 {
+    private readonly OceanFreshLocalApiClient _apiClient = new();
     private object _currentPage;
     private string _headerTitle;
     private string _headerSubtitle;
     private bool _isAuthenticated;
     private UserRole? _currentRole;
     private string _currentUserDisplay;
+    private DateTimeOffset? _currentLoginAt;
+    private string _adminPassword = string.Empty;
+    private string _loginStatusMessage = string.Empty;
     private bool _isFeedbackPanelOpen;
     private string _draftFeedbackComment = string.Empty;
     private string _selectedFeedbackTargetCode = string.Empty;
     private string _feedbackStatusMessage = "打开批注模式后，可以直接把意见记到当前页面。";
     private string _feedbackHint = string.Empty;
+    private bool _isSettingsWorkspace;
+    private bool _isUserWorkspace;
 
     public MainWindowViewModel()
     {
         ShellNavigationService.NavigateRequested = OpenPage;
         NavigationItems = new ObservableCollection<NavigationItemViewModel>
         {
-            new("首页总览", null),
-            new("检测监控", null),
-            new("海鲜产品", null),
-            new("通道配置", null),
-            new("模型管理", UserRole.Administrator),
-            new("系统设置", UserRole.Administrator)
+            new("首页", "\uE80F", null),
+            new("用户", "\uE77B", null),
+            new("数据", "\uE9D2", null),
+            new("设置", "\uE713", UserRole.Administrator)
         };
 
         NavigateCommand = new RelayCommand(Navigate);
-        LoginAsOperatorCommand = new RelayCommand(_ => Login(UserRole.Operator));
-        LoginAsAdminCommand = new RelayCommand(_ => Login(UserRole.Administrator));
+        LoginAsOperatorCommand = new AsyncRelayCommand(LoginAsOperatorAsync);
+        LoginAsAdminCommand = new AsyncRelayCommand(LoginAsAdminAsync);
         LogoutCommand = new RelayCommand(_ => Logout());
         ToggleFeedbackPanelCommand = new RelayCommand(_ => IsFeedbackPanelOpen = !IsFeedbackPanelOpen);
         SaveFeedbackCommand = new RelayCommand(_ => SaveFeedback());
         SelectFeedbackTargetCommand = new RelayCommand(SelectFeedbackTarget);
-        _currentPage = new DashboardPageViewModel();
-        _headerTitle = "首页总览";
-        _headerSubtitle = "单机闭环、模型多版本切换、实时状态总览";
+        _currentPage = new MonitoringPageViewModel();
+        _headerTitle = "首页";
+        _headerSubtitle = string.Empty;
         _currentUserDisplay = "未登录";
         LoadFeedbackEntries();
         UpdateFeedbackTargets(_headerTitle);
@@ -148,6 +153,18 @@ public sealed class MainWindowViewModel : ViewModelBase
     {
         get => _currentUserDisplay;
         private set => SetProperty(ref _currentUserDisplay, value);
+    }
+
+    public string AdminPassword
+    {
+        get => _adminPassword;
+        set => SetProperty(ref _adminPassword, value);
+    }
+
+    public string LoginStatusMessage
+    {
+        get => _loginStatusMessage;
+        private set => SetProperty(ref _loginStatusMessage, value);
     }
 
     public bool IsFeedbackPanelOpen
@@ -198,13 +215,38 @@ public sealed class MainWindowViewModel : ViewModelBase
         private set => SetProperty(ref _feedbackStatusMessage, value);
     }
 
+    public bool IsSettingsWorkspace
+    {
+        get => _isSettingsWorkspace;
+        private set => SetProperty(ref _isSettingsWorkspace, value);
+    }
+
+    public bool IsUserWorkspace
+    {
+        get => _isUserWorkspace;
+        private set => SetProperty(ref _isUserWorkspace, value);
+    }
+
     private void OpenPage(object pageViewModel, string title, string subtitle)
     {
         try
         {
+            if (!ReferenceEquals(CurrentPage, pageViewModel) && CurrentPage is IDisposable disposablePage)
+            {
+                disposablePage.Dispose();
+            }
+
             CurrentPage = pageViewModel;
             HeaderTitle = title;
             HeaderSubtitle = subtitle;
+            IsSettingsWorkspace = pageViewModel is SettingsPageViewModel
+                or ProductEditorPageViewModel
+                or ProductDetailPageViewModel
+                or ModelImportPageViewModel
+                or ModelDetailPageViewModel
+                or ChannelEditorPageViewModel
+                or ChannelDetailPageViewModel;
+            IsUserWorkspace = pageViewModel is UserCenterPageViewModel;
             UpdateFeedbackTargets(title);
 
             if (pageViewModel is IActivatablePageViewModel activatablePageViewModel)
@@ -216,35 +258,76 @@ public sealed class MainWindowViewModel : ViewModelBase
         {
             HeaderTitle = "页面打开失败";
             HeaderSubtitle = ex.Message;
-            CurrentPage = new DashboardPageViewModel();
+            IsSettingsWorkspace = false;
+            IsUserWorkspace = false;
+            CurrentPage = new MonitoringPageViewModel();
         }
     }
 
-    private void Login(UserRole role)
+    private async Task LoginAsOperatorAsync()
     {
-        _currentRole = role;
+        var result = await _apiClient.LoginOperatorAsync(CancellationToken.None);
+        Login(result);
+    }
+
+    private async Task LoginAsAdminAsync()
+    {
+        try
+        {
+            if (string.IsNullOrWhiteSpace(AdminPassword))
+            {
+                LoginStatusMessage = "请输入管理员密码。";
+                return;
+            }
+
+            var result = await _apiClient.LoginAdminAsync(AdminPassword, CancellationToken.None);
+            AdminPassword = string.Empty;
+            Login(result);
+        }
+        catch (Exception ex)
+        {
+            LoginStatusMessage = ex.Message;
+        }
+    }
+
+    private void Login(LoginResultDto result)
+    {
+        _currentRole = result.Role;
+        _currentLoginAt = result.LoginAt;
         IsAuthenticated = true;
-        CurrentUserDisplay = role == UserRole.Administrator ? "管理员 admin" : "操作员 operator";
+        CurrentUserDisplay = $"{result.DisplayName} {result.UserName}";
+        LoginStatusMessage = string.Empty;
         UpdateNavigationVisibility();
 
-        var defaultPage = role == UserRole.Administrator ? "模型管理" : "检测监控";
+        var defaultPage = result.Role == UserRole.Administrator ? "设置" : "首页";
         Navigate(defaultPage);
     }
 
     private void Logout()
     {
+        OceanFreshLocalApiClient.ClearSession();
+        if (CurrentPage is IDisposable disposablePage)
+        {
+            disposablePage.Dispose();
+        }
+
         _currentRole = null;
+        _currentLoginAt = null;
         IsAuthenticated = false;
         CurrentUserDisplay = "未登录";
+        AdminPassword = string.Empty;
         foreach (var item in NavigationItems)
         {
             item.IsVisible = true;
         }
 
-        CurrentPage = new DashboardPageViewModel();
-        HeaderTitle = "首页总览";
-        HeaderSubtitle = "单机闭环、模型多版本切换、实时状态总览";
+        CurrentPage = new MonitoringPageViewModel();
+        HeaderTitle = "首页";
+        HeaderSubtitle = string.Empty;
+        IsSettingsWorkspace = false;
+        IsUserWorkspace = false;
         IsFeedbackPanelOpen = false;
+        LoginStatusMessage = string.Empty;
         UpdateFeedbackTargets(HeaderTitle);
     }
 
@@ -263,25 +346,30 @@ public sealed class MainWindowViewModel : ViewModelBase
             NavigationItemViewModel item => item.Title,
             _ => parameter?.ToString()
         };
+        foreach (var item in NavigationItems)
+        {
+            item.IsSelected = string.Equals(item.Title, target, StringComparison.OrdinalIgnoreCase);
+        }
+
         switch (target)
         {
-            case "检测监控":
-                OpenPage(new MonitoringPageViewModel(), "检测监控", "查看实时图像、识别结果、异常类别和设备状态");
+            case "数据":
+                OpenPage(new ProductionStatisticsPageViewModel(), "数据中心", string.Empty);
                 break;
-            case "海鲜产品":
-                OpenPage(new RecipesPageViewModel(), "海鲜产品", "只维护海鲜名称与性状类别，不在这里配置通道和运行参数");
+            case "用户":
+                OpenPage(
+                    new UserCenterPageViewModel(
+                        CurrentUserDisplay,
+                        _currentRole ?? UserRole.Operator,
+                        _currentLoginAt ?? DateTimeOffset.Now),
+                    "用户",
+                    string.Empty);
                 break;
-            case "通道配置":
-                OpenPage(new ChannelConfigsPageViewModel(), "通道配置", "每个通道一次只能选择一种海鲜，再绑定模型和阈值");
-                break;
-            case "模型管理":
-                OpenPage(new ModelManagementPageViewModel(), "模型管理", "按海鲜类别管理多版本模型、启用与回滚");
-                break;
-            case "系统设置":
-                OpenPage(new SettingsPageViewModel(), "系统设置", "角色权限、日志策略、告警联锁和设备基础配置");
+            case "设置":
+                OpenPage(new SettingsPageViewModel(), "设置", string.Empty);
                 break;
             default:
-                OpenPage(new DashboardPageViewModel(), "首页总览", "单机闭环、模型多版本切换、实时状态总览");
+                OpenPage(new MonitoringPageViewModel(), "首页", string.Empty);
                 break;
         }
     }
@@ -312,6 +400,17 @@ public sealed class MainWindowViewModel : ViewModelBase
                 new("PE3", "缺陷新增"),
                 new("PE4", "缺陷列表"),
                 new("PE5", "底部操作")
+            ];
+        }
+
+        if (title.StartsWith("产品详情", StringComparison.Ordinal))
+        {
+            return
+            [
+                new("PD1", "顶部与返回"),
+                new("PD2", "基础信息"),
+                new("PD3", "缺陷信息"),
+                new("PD4", "编辑与删除")
             ];
         }
 
@@ -349,6 +448,17 @@ public sealed class MainWindowViewModel : ViewModelBase
             ];
         }
 
+        if (title.StartsWith("模型详情", StringComparison.Ordinal))
+        {
+            return
+            [
+                new("MD1", "顶部与返回"),
+                new("MD2", "基础状态"),
+                new("MD3", "权重文件"),
+                new("MD4", "模型描述")
+            ];
+        }
+
         return title switch
         {
             "海鲜产品" =>
@@ -365,23 +475,26 @@ public sealed class MainWindowViewModel : ViewModelBase
                 new("C3", "通道列表"),
                 new("C4", "底部操作")
             ],
-            "首页总览" =>
+            "首页" =>
             [
-                new("D1", "总览指标"),
-                new("D2", "设备状态")
+                new("H1", "食品检测"),
+                new("H2", "状态记录")
             ],
-            "检测监控" =>
+            "数据中心" =>
             [
-                new("M1", "检测结果"),
-                new("M2", "设备状态")
+                new("R1", "历史统计"),
+                new("R2", "检测任务记录"),
+                new("R3", "报表与追溯")
             ],
-            "模型管理" =>
+            "用户" =>
             [
-                new("MM1", "模型列表")
+                new("U1", "当前身份"),
+                new("U2", "操作提示")
             ],
-            "系统设置" =>
+            "设置" =>
             [
-                new("S1", "设置区")
+                new("S1", "顶部设置页签"),
+                new("S2", "模块设置区")
             ],
             _ => []
         };
@@ -476,11 +589,23 @@ public interface IActivatablePageViewModel
     Task ActivateAsync();
 }
 
-public sealed class NavigationItemViewModel(string title, UserRole? requiredRole) : ViewModelBase
+public sealed class NavigationItemViewModel(string title, string icon, UserRole? requiredRole) : ViewModelBase
 {
     private bool _isVisible = true;
+    private bool _isSelected;
 
     public string Title { get; } = title;
+
+    public string Icon { get; } = icon;
+
+    public string IconSource => Title switch
+    {
+        "首页" => "/Assets/Figma/nav-home.png",
+        "用户" => "/Assets/Figma/nav-user.png",
+        "数据" => "/Assets/Figma/nav-data.png",
+        "设置" => "/Assets/Figma/nav-user.png",
+        _ => "/Assets/Figma/nav-home.png"
+    };
 
     public UserRole? RequiredRole { get; } = requiredRole;
 
@@ -488,6 +613,12 @@ public sealed class NavigationItemViewModel(string title, UserRole? requiredRole
     {
         get => _isVisible;
         set => SetProperty(ref _isVisible, value);
+    }
+
+    public bool IsSelected
+    {
+        get => _isSelected;
+        set => SetProperty(ref _isSelected, value);
     }
 
     public override string ToString() => Title;

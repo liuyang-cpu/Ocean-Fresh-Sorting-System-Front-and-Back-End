@@ -1,0 +1,119 @@
+<mxfile host="app.diagrams.net" modified="2026-07-17T21:30:00.000Z" agent="Codex" version="27.0.5" type="device">
+  <diagram id="user-trace" name="1 用户与操作追溯">
+    <mxGraphModel dx="1200" dy="650" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1200" pageHeight="650" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        <mxCell id="u-title" value="用户与操作追溯功能" style="text;html=1;strokeColor=none;fillColor=none;fontFamily=Microsoft YaHei;fontSize=24;fontStyle=1;fontColor=#102A3B;" vertex="1" parent="1"><mxGeometry x="40" y="24" width="420" height="40" as="geometry"/></mxCell>
+        <mxCell id="u-boundary" value="海洋生鲜分拣系统" style="rounded=1;whiteSpace=wrap;html=1;arcSize=8;fillColor=#FFFFFF;strokeColor=#8FB2C3;strokeWidth=2;fontFamily=Microsoft YaHei;fontSize=16;fontStyle=1;align=left;verticalAlign=top;spacingTop=12;spacingLeft=16;" vertex="1" parent="1"><mxGeometry x="260" y="70" width="850" height="530" as="geometry"/></mxCell>
+        <mxCell id="u-operator-0" value="操作员" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;fontFamily=Microsoft YaHei;fontSize=16;fontColor=#102A3B;" vertex="1" parent="1"><mxGeometry x="70" y="160" width="70" height="120" as="geometry"/></mxCell>
+        <mxCell id="u-admin-1" value="管理员" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;fontFamily=Microsoft YaHei;fontSize=16;fontColor=#102A3B;" vertex="1" parent="1"><mxGeometry x="70" y="390" width="70" height="120" as="geometry"/></mxCell>
+        <mxCell id="u-u1" value="操作员登录" style="ellipse;whiteSpace=wrap;html=1;fillColor=#E8F5F6;strokeColor=#0B7A86;strokeWidth=2;fontFamily=Microsoft YaHei;fontSize=16;fontColor=#102A3B;" vertex="1" parent="1"><mxGeometry x="340" y="135" width="280" height="70" as="geometry"/></mxCell>
+        <mxCell id="u-u2" value="查看当前用户" style="ellipse;whiteSpace=wrap;html=1;fillColor=#EDF8F3;strokeColor=#159A78;strokeWidth=2;fontFamily=Microsoft YaHei;fontSize=16;fontColor=#102A3B;" vertex="1" parent="1"><mxGeometry x="340" y="285" width="280" height="70" as="geometry"/></mxCell>
+        <mxCell id="u-u3" value="查看本人重要操作记录" style="ellipse;whiteSpace=wrap;html=1;fillColor=#F2F6F8;strokeColor=#6D8FA0;strokeWidth=2;fontFamily=Microsoft YaHei;fontSize=16;fontColor=#102A3B;" vertex="1" parent="1"><mxGeometry x="340" y="435" width="280" height="70" as="geometry"/></mxCell>
+        <mxCell id="u-u4" value="管理员登录" style="ellipse;whiteSpace=wrap;html=1;fillColor=#E8F5F6;strokeColor=#0B7A86;strokeWidth=2;fontFamily=Microsoft YaHei;fontSize=16;fontColor=#102A3B;" vertex="1" parent="1"><mxGeometry x="690" y="135" width="280" height="70" as="geometry"/></mxCell>
+        <mxCell id="u-u5" value="查看权限范围" style="ellipse;whiteSpace=wrap;html=1;fillColor=#EDF8F3;strokeColor=#159A78;strokeWidth=2;fontFamily=Microsoft YaHei;fontSize=16;fontColor=#102A3B;" vertex="1" parent="1"><mxGeometry x="690" y="285" width="280" height="70" as="geometry"/></mxCell>
+        <mxCell id="u-u6" value="查看全部操作记录" style="ellipse;whiteSpace=wrap;html=1;fillColor=#F2F6F8;strokeColor=#6D8FA0;strokeWidth=2;fontFamily=Microsoft YaHei;fontSize=16;fontColor=#102A3B;" vertex="1" parent="1"><mxGeometry x="690" y="435" width="280" height="70" as="geometry"/></mxCell>
+        <mxCell id="u-e1" style="edgeStyle=none;rounded=0;html=1;endArrow=classic;endFill=1;endSize=10;strokeColor=#6D8FA0;strokeWidth=1.5;" edge="1" parent="1" source="u-operator-0" target="u-u1"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="u-e2" style="edgeStyle=none;rounded=0;html=1;endArrow=classic;endFill=1;endSize=10;strokeColor=#6D8FA0;strokeWidth=1.5;" edge="1" parent="1" source="u-operator-0" target="u-u2"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="u-e3" style="edgeStyle=none;rounded=0;html=1;endArrow=classic;endFill=1;endSize=10;strokeColor=#6D8FA0;strokeWidth=1.5;" edge="1" parent="1" source="u-operator-0" target="u-u3"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="u-e4" style="edgeStyle=none;rounded=0;html=1;endArrow=classic;endFill=1;endSize=10;strokeColor=#6D8FA0;strokeWidth=1.5;" edge="1" parent="1" source="u-admin-1" target="u-u4"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="u-e5" style="edgeStyle=none;rounded=0;html=1;endArrow=classic;endFill=1;endSize=10;strokeColor=#6D8FA0;strokeWidth=1.5;" edge="1" parent="1" source="u-admin-1" target="u-u5"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="u-e6" style="edgeStyle=none;rounded=0;html=1;endArrow=classic;endFill=1;endSize=10;strokeColor=#6D8FA0;strokeWidth=1.5;" edge="1" parent="1" source="u-admin-1" target="u-u6"><mxGeometry relative="1" as="geometry"/></mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="production" name="2 生产监控与检测">
+    <mxGraphModel dx="1200" dy="650" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1200" pageHeight="650" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        <mxCell id="p-title" value="生产监控与检测功能" style="text;html=1;strokeColor=none;fillColor=none;fontFamily=Microsoft YaHei;fontSize=24;fontStyle=1;fontColor=#102A3B;" vertex="1" parent="1"><mxGeometry x="40" y="24" width="420" height="40" as="geometry"/></mxCell>
+        <mxCell id="p-boundary" value="海洋生鲜分拣系统" style="rounded=1;whiteSpace=wrap;html=1;arcSize=8;fillColor=#FFFFFF;strokeColor=#8FB2C3;strokeWidth=2;fontFamily=Microsoft YaHei;fontSize=16;fontStyle=1;align=left;verticalAlign=top;spacingTop=12;spacingLeft=16;" vertex="1" parent="1"><mxGeometry x="260" y="70" width="850" height="530" as="geometry"/></mxCell>
+        <mxCell id="p-operator-0" value="操作员" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;fontFamily=Microsoft YaHei;fontSize=16;fontColor=#102A3B;" vertex="1" parent="1"><mxGeometry x="70" y="220" width="70" height="120" as="geometry"/></mxCell>
+        <mxCell id="p-u1" value="查看实时检测画面" style="ellipse;whiteSpace=wrap;html=1;fillColor=#E8F5F6;strokeColor=#0B7A86;strokeWidth=2;fontFamily=Microsoft YaHei;fontSize=16;fontColor=#102A3B;" vertex="1" parent="1"><mxGeometry x="340" y="110" width="280" height="70" as="geometry"/></mxCell>
+        <mxCell id="p-u2" value="启动 / 停止检测任务" style="ellipse;whiteSpace=wrap;html=1;fillColor=#EDF8F3;strokeColor=#159A78;strokeWidth=2;fontFamily=Microsoft YaHei;fontSize=16;fontColor=#102A3B;" vertex="1" parent="1"><mxGeometry x="340" y="220" width="280" height="70" as="geometry"/></mxCell>
+        <mxCell id="p-u3" value="查看实时统计" style="ellipse;whiteSpace=wrap;html=1;fillColor=#F2F6F8;strokeColor=#6D8FA0;strokeWidth=2;fontFamily=Microsoft YaHei;fontSize=16;fontColor=#102A3B;" vertex="1" parent="1"><mxGeometry x="340" y="330" width="280" height="70" as="geometry"/></mxCell>
+        <mxCell id="p-u4" value="选择与更新图像源" style="ellipse;whiteSpace=wrap;html=1;fillColor=#E8F5F6;strokeColor=#0B7A86;strokeWidth=2;fontFamily=Microsoft YaHei;fontSize=16;fontColor=#102A3B;" vertex="1" parent="1"><mxGeometry x="340" y="440" width="280" height="70" as="geometry"/></mxCell>
+        <mxCell id="p-u5" value="查看通道详情" style="ellipse;whiteSpace=wrap;html=1;fillColor=#EDF8F3;strokeColor=#159A78;strokeWidth=2;fontFamily=Microsoft YaHei;fontSize=16;fontColor=#102A3B;" vertex="1" parent="1"><mxGeometry x="690" y="195" width="280" height="70" as="geometry"/></mxCell>
+        <mxCell id="p-u6" value="选择并切换通道" style="ellipse;whiteSpace=wrap;html=1;fillColor=#F2F6F8;strokeColor=#6D8FA0;strokeWidth=2;fontFamily=Microsoft YaHei;fontSize=16;fontColor=#102A3B;" vertex="1" parent="1"><mxGeometry x="690" y="365" width="280" height="70" as="geometry"/></mxCell>
+        <mxCell id="p-e1" style="edgeStyle=none;rounded=0;html=1;endArrow=classic;endFill=1;endSize=10;strokeColor=#6D8FA0;strokeWidth=1.5;" edge="1" parent="1" source="p-operator-0" target="p-u1"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="p-e2" style="edgeStyle=none;rounded=0;html=1;endArrow=classic;endFill=1;endSize=10;strokeColor=#6D8FA0;strokeWidth=1.5;" edge="1" parent="1" source="p-operator-0" target="p-u2"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="p-e3" style="edgeStyle=none;rounded=0;html=1;endArrow=classic;endFill=1;endSize=10;strokeColor=#6D8FA0;strokeWidth=1.5;" edge="1" parent="1" source="p-operator-0" target="p-u3"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="p-e4" style="edgeStyle=none;rounded=0;html=1;endArrow=classic;endFill=1;endSize=10;strokeColor=#6D8FA0;strokeWidth=1.5;" edge="1" parent="1" source="p-operator-0" target="p-u4"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="p-e5" style="edgeStyle=none;rounded=0;html=1;endArrow=classic;endFill=1;endSize=10;strokeColor=#6D8FA0;strokeWidth=1.5;" edge="1" parent="1" source="p-operator-0" target="p-u5"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="p-e6" style="edgeStyle=none;rounded=0;html=1;endArrow=classic;endFill=1;endSize=10;strokeColor=#6D8FA0;strokeWidth=1.5;" edge="1" parent="1" source="p-operator-0" target="p-u6"><mxGeometry relative="1" as="geometry"/></mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="data-review" name="3 数据统计与人工复核">
+    <mxGraphModel dx="1200" dy="650" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1200" pageHeight="650" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        <mxCell id="d-title" value="数据统计与人工复核功能" style="text;html=1;strokeColor=none;fillColor=none;fontFamily=Microsoft YaHei;fontSize=24;fontStyle=1;fontColor=#102A3B;" vertex="1" parent="1"><mxGeometry x="40" y="24" width="420" height="40" as="geometry"/></mxCell>
+        <mxCell id="d-boundary" value="海洋生鲜分拣系统" style="rounded=1;whiteSpace=wrap;html=1;arcSize=8;fillColor=#FFFFFF;strokeColor=#8FB2C3;strokeWidth=2;fontFamily=Microsoft YaHei;fontSize=16;fontStyle=1;align=left;verticalAlign=top;spacingTop=12;spacingLeft=16;" vertex="1" parent="1"><mxGeometry x="260" y="70" width="850" height="530" as="geometry"/></mxCell>
+        <mxCell id="d-admin-0" value="管理员" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;fontFamily=Microsoft YaHei;fontSize=16;fontColor=#102A3B;" vertex="1" parent="1"><mxGeometry x="70" y="160" width="70" height="120" as="geometry"/></mxCell>
+        <mxCell id="d-operator-1" value="操作员" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;fontFamily=Microsoft YaHei;fontSize=16;fontColor=#102A3B;" vertex="1" parent="1"><mxGeometry x="70" y="390" width="70" height="120" as="geometry"/></mxCell>
+        <mxCell id="d-u1" value="筛选历史统计" style="ellipse;whiteSpace=wrap;html=1;fillColor=#E8F5F6;strokeColor=#0B7A86;strokeWidth=2;fontFamily=Microsoft YaHei;fontSize=16;fontColor=#102A3B;" vertex="1" parent="1"><mxGeometry x="340" y="175" width="280" height="70" as="geometry"/></mxCell>
+        <mxCell id="d-u2" value="查看趋势与缺陷排行" style="ellipse;whiteSpace=wrap;html=1;fillColor=#EDF8F3;strokeColor=#159A78;strokeWidth=2;fontFamily=Microsoft YaHei;fontSize=16;fontColor=#102A3B;" vertex="1" parent="1"><mxGeometry x="340" y="365" width="280" height="70" as="geometry"/></mxCell>
+        <mxCell id="d-u3" value="查询检测任务" style="ellipse;whiteSpace=wrap;html=1;fillColor=#F2F6F8;strokeColor=#6D8FA0;strokeWidth=2;fontFamily=Microsoft YaHei;fontSize=16;fontColor=#102A3B;" vertex="1" parent="1"><mxGeometry x="690" y="110" width="280" height="70" as="geometry"/></mxCell>
+        <mxCell id="d-u4" value="查看任务详情与复核进度" style="ellipse;whiteSpace=wrap;html=1;fillColor=#E8F5F6;strokeColor=#0B7A86;strokeWidth=2;fontFamily=Microsoft YaHei;fontSize=16;fontColor=#102A3B;" vertex="1" parent="1"><mxGeometry x="690" y="220" width="280" height="70" as="geometry"/></mxCell>
+        <mxCell id="d-u5" value="确认异常 / 正常误检" style="ellipse;whiteSpace=wrap;html=1;fillColor=#EDF8F3;strokeColor=#159A78;strokeWidth=2;fontFamily=Microsoft YaHei;fontSize=16;fontColor=#102A3B;" vertex="1" parent="1"><mxGeometry x="690" y="330" width="280" height="70" as="geometry"/></mxCell>
+        <mxCell id="d-u6" value="修正异常类别并完成复核" style="ellipse;whiteSpace=wrap;html=1;fillColor=#F2F6F8;strokeColor=#6D8FA0;strokeWidth=2;fontFamily=Microsoft YaHei;fontSize=16;fontColor=#102A3B;" vertex="1" parent="1"><mxGeometry x="690" y="440" width="280" height="70" as="geometry"/></mxCell>
+        <mxCell id="d-e1" style="edgeStyle=none;rounded=0;html=1;endArrow=classic;endFill=1;endSize=10;strokeColor=#6D8FA0;strokeWidth=1.5;" edge="1" parent="1" source="d-admin-0" target="d-u1"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="d-e2" style="edgeStyle=none;rounded=0;html=1;endArrow=classic;endFill=1;endSize=10;strokeColor=#6D8FA0;strokeWidth=1.5;" edge="1" parent="1" source="d-admin-0" target="d-u2"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="d-e3" style="edgeStyle=none;rounded=0;html=1;endArrow=classic;endFill=1;endSize=10;strokeColor=#6D8FA0;strokeWidth=1.5;" edge="1" parent="1" source="d-operator-1" target="d-u3"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="d-e4" style="edgeStyle=none;rounded=0;html=1;endArrow=classic;endFill=1;endSize=10;strokeColor=#6D8FA0;strokeWidth=1.5;" edge="1" parent="1" source="d-operator-1" target="d-u4"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="d-e5" style="edgeStyle=none;rounded=0;html=1;endArrow=classic;endFill=1;endSize=10;strokeColor=#6D8FA0;strokeWidth=1.5;" edge="1" parent="1" source="d-operator-1" target="d-u5"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="d-e6" style="edgeStyle=none;rounded=0;html=1;endArrow=classic;endFill=1;endSize=10;strokeColor=#6D8FA0;strokeWidth=1.5;" edge="1" parent="1" source="d-operator-1" target="d-u6"><mxGeometry relative="1" as="geometry"/></mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="configuration" name="4 配置管理">
+    <mxGraphModel dx="1200" dy="650" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1200" pageHeight="650" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        <mxCell id="c-title" value="产品、模型与通道配置功能" style="text;html=1;strokeColor=none;fillColor=none;fontFamily=Microsoft YaHei;fontSize=24;fontStyle=1;fontColor=#102A3B;" vertex="1" parent="1"><mxGeometry x="40" y="24" width="420" height="40" as="geometry"/></mxCell>
+        <mxCell id="c-boundary" value="海洋生鲜分拣系统" style="rounded=1;whiteSpace=wrap;html=1;arcSize=8;fillColor=#FFFFFF;strokeColor=#8FB2C3;strokeWidth=2;fontFamily=Microsoft YaHei;fontSize=16;fontStyle=1;align=left;verticalAlign=top;spacingTop=12;spacingLeft=16;" vertex="1" parent="1"><mxGeometry x="260" y="70" width="850" height="530" as="geometry"/></mxCell>
+        <mxCell id="c-admin-0" value="管理员" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;fontFamily=Microsoft YaHei;fontSize=16;fontColor=#102A3B;" vertex="1" parent="1"><mxGeometry x="70" y="220" width="70" height="120" as="geometry"/></mxCell>
+        <mxCell id="c-u1" value="管理海鲜产品" style="ellipse;whiteSpace=wrap;html=1;fillColor=#E8F5F6;strokeColor=#0B7A86;strokeWidth=2;fontFamily=Microsoft YaHei;fontSize=16;fontColor=#102A3B;" vertex="1" parent="1"><mxGeometry x="340" y="135" width="280" height="70" as="geometry"/></mxCell>
+        <mxCell id="c-u2" value="管理检测模型" style="ellipse;whiteSpace=wrap;html=1;fillColor=#EDF8F3;strokeColor=#159A78;strokeWidth=2;fontFamily=Microsoft YaHei;fontSize=16;fontColor=#102A3B;" vertex="1" parent="1"><mxGeometry x="340" y="285" width="280" height="70" as="geometry"/></mxCell>
+        <mxCell id="c-u3" value="管理生产通道" style="ellipse;whiteSpace=wrap;html=1;fillColor=#F2F6F8;strokeColor=#6D8FA0;strokeWidth=2;fontFamily=Microsoft YaHei;fontSize=16;fontColor=#102A3B;" vertex="1" parent="1"><mxGeometry x="340" y="435" width="280" height="70" as="geometry"/></mxCell>
+        <mxCell id="c-u4" value="配置缺陷类型与标签文件" style="ellipse;whiteSpace=wrap;html=1;fillColor=#E8F5F6;strokeColor=#0B7A86;strokeWidth=2;fontFamily=Microsoft YaHei;fontSize=16;fontColor=#102A3B;" vertex="1" parent="1"><mxGeometry x="690" y="135" width="280" height="70" as="geometry"/></mxCell>
+        <mxCell id="c-u5" value="查看标签映射与绑定状态" style="ellipse;whiteSpace=wrap;html=1;fillColor=#EDF8F3;strokeColor=#159A78;strokeWidth=2;fontFamily=Microsoft YaHei;fontSize=16;fontColor=#102A3B;" vertex="1" parent="1"><mxGeometry x="690" y="285" width="280" height="70" as="geometry"/></mxCell>
+        <mxCell id="c-u6" value="绑定产品与模型" style="ellipse;whiteSpace=wrap;html=1;fillColor=#F2F6F8;strokeColor=#6D8FA0;strokeWidth=2;fontFamily=Microsoft YaHei;fontSize=16;fontColor=#102A3B;" vertex="1" parent="1"><mxGeometry x="690" y="435" width="280" height="70" as="geometry"/></mxCell>
+        <mxCell id="c-e1" style="edgeStyle=none;rounded=0;html=1;endArrow=classic;endFill=1;endSize=10;strokeColor=#6D8FA0;strokeWidth=1.5;" edge="1" parent="1" source="c-admin-0" target="c-u1"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="c-e2" style="edgeStyle=none;rounded=0;html=1;endArrow=classic;endFill=1;endSize=10;strokeColor=#6D8FA0;strokeWidth=1.5;" edge="1" parent="1" source="c-admin-0" target="c-u2"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="c-e3" style="edgeStyle=none;rounded=0;html=1;endArrow=classic;endFill=1;endSize=10;strokeColor=#6D8FA0;strokeWidth=1.5;" edge="1" parent="1" source="c-admin-0" target="c-u3"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="c-e4" style="edgeStyle=none;rounded=0;html=1;endArrow=classic;endFill=1;endSize=10;strokeColor=#6D8FA0;strokeWidth=1.5;" edge="1" parent="1" source="c-admin-0" target="c-u4"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="c-e5" style="edgeStyle=none;rounded=0;html=1;endArrow=classic;endFill=1;endSize=10;strokeColor=#6D8FA0;strokeWidth=1.5;" edge="1" parent="1" source="c-admin-0" target="c-u5"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="c-e6" style="edgeStyle=none;rounded=0;html=1;endArrow=classic;endFill=1;endSize=10;strokeColor=#6D8FA0;strokeWidth=1.5;" edge="1" parent="1" source="c-admin-0" target="c-u6"><mxGeometry relative="1" as="geometry"/></mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="maintenance" name="5 设备、安全与维护">
+    <mxGraphModel dx="1200" dy="650" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1200" pageHeight="650" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        <mxCell id="m-title" value="设备、安全与维护功能" style="text;html=1;strokeColor=none;fillColor=none;fontFamily=Microsoft YaHei;fontSize=24;fontStyle=1;fontColor=#102A3B;" vertex="1" parent="1"><mxGeometry x="40" y="24" width="420" height="40" as="geometry"/></mxCell>
+        <mxCell id="m-boundary" value="海洋生鲜分拣系统" style="rounded=1;whiteSpace=wrap;html=1;arcSize=8;fillColor=#FFFFFF;strokeColor=#8FB2C3;strokeWidth=2;fontFamily=Microsoft YaHei;fontSize=16;fontStyle=1;align=left;verticalAlign=top;spacingTop=12;spacingLeft=16;" vertex="1" parent="1"><mxGeometry x="260" y="70" width="850" height="530" as="geometry"/></mxCell>
+        <mxCell id="m-admin-0" value="管理员" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;fontFamily=Microsoft YaHei;fontSize=16;fontColor=#102A3B;" vertex="1" parent="1"><mxGeometry x="70" y="220" width="70" height="120" as="geometry"/></mxCell>
+        <mxCell id="m-u1" value="查看设备状态与自检" style="ellipse;whiteSpace=wrap;html=1;fillColor=#E8F5F6;strokeColor=#0B7A86;strokeWidth=2;fontFamily=Microsoft YaHei;fontSize=16;fontColor=#102A3B;" vertex="1" parent="1"><mxGeometry x="340" y="110" width="280" height="70" as="geometry"/></mxCell>
+        <mxCell id="m-u2" value="配置剔除参数" style="ellipse;whiteSpace=wrap;html=1;fillColor=#EDF8F3;strokeColor=#159A78;strokeWidth=2;fontFamily=Microsoft YaHei;fontSize=16;fontColor=#102A3B;" vertex="1" parent="1"><mxGeometry x="340" y="220" width="280" height="70" as="geometry"/></mxCell>
+        <mxCell id="m-u3" value="查看安全预警" style="ellipse;whiteSpace=wrap;html=1;fillColor=#F2F6F8;strokeColor=#6D8FA0;strokeWidth=2;fontFamily=Microsoft YaHei;fontSize=16;fontColor=#102A3B;" vertex="1" parent="1"><mxGeometry x="340" y="330" width="280" height="70" as="geometry"/></mxCell>
+        <mxCell id="m-u4" value="查看关键硬件状态" style="ellipse;whiteSpace=wrap;html=1;fillColor=#E8F5F6;strokeColor=#0B7A86;strokeWidth=2;fontFamily=Microsoft YaHei;fontSize=16;fontColor=#102A3B;" vertex="1" parent="1"><mxGeometry x="340" y="440" width="280" height="70" as="geometry"/></mxCell>
+        <mxCell id="m-u5" value="检查与安装软件更新" style="ellipse;whiteSpace=wrap;html=1;fillColor=#EDF8F3;strokeColor=#159A78;strokeWidth=2;fontFamily=Microsoft YaHei;fontSize=16;fontColor=#102A3B;" vertex="1" parent="1"><mxGeometry x="690" y="195" width="280" height="70" as="geometry"/></mxCell>
+        <mxCell id="m-u6" value="查看更新历史" style="ellipse;whiteSpace=wrap;html=1;fillColor=#F2F6F8;strokeColor=#6D8FA0;strokeWidth=2;fontFamily=Microsoft YaHei;fontSize=16;fontColor=#102A3B;" vertex="1" parent="1"><mxGeometry x="690" y="365" width="280" height="70" as="geometry"/></mxCell>
+        <mxCell id="m-e1" style="edgeStyle=none;rounded=0;html=1;endArrow=classic;endFill=1;endSize=10;strokeColor=#6D8FA0;strokeWidth=1.5;" edge="1" parent="1" source="m-admin-0" target="m-u1"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="m-e2" style="edgeStyle=none;rounded=0;html=1;endArrow=classic;endFill=1;endSize=10;strokeColor=#6D8FA0;strokeWidth=1.5;" edge="1" parent="1" source="m-admin-0" target="m-u2"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="m-e3" style="edgeStyle=none;rounded=0;html=1;endArrow=classic;endFill=1;endSize=10;strokeColor=#6D8FA0;strokeWidth=1.5;" edge="1" parent="1" source="m-admin-0" target="m-u3"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="m-e4" style="edgeStyle=none;rounded=0;html=1;endArrow=classic;endFill=1;endSize=10;strokeColor=#6D8FA0;strokeWidth=1.5;" edge="1" parent="1" source="m-admin-0" target="m-u4"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="m-e5" style="edgeStyle=none;rounded=0;html=1;endArrow=classic;endFill=1;endSize=10;strokeColor=#6D8FA0;strokeWidth=1.5;" edge="1" parent="1" source="m-admin-0" target="m-u5"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="m-e6" style="edgeStyle=none;rounded=0;html=1;endArrow=classic;endFill=1;endSize=10;strokeColor=#6D8FA0;strokeWidth=1.5;" edge="1" parent="1" source="m-admin-0" target="m-u6"><mxGeometry relative="1" as="geometry"/></mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

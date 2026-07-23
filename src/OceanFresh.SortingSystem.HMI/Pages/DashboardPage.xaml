@@ -8,32 +8,72 @@
       <RowDefinition Height="*" />
     </Grid.RowDefinitions>
 
-    <UniformGrid Columns="4" Margin="0,0,0,16">
-      <Border Background="#14335C" CornerRadius="16" Margin="0,0,12,0" Padding="18">
-        <StackPanel>
-          <TextBlock Text="班次检测数" Foreground="#9FC8FF" />
-          <TextBlock Text="{Binding TotalCount}" Foreground="White" FontSize="30" FontWeight="Bold" />
-        </StackPanel>
-      </Border>
-      <Border Background="#14335C" CornerRadius="16" Margin="0,0,12,0" Padding="18">
-        <StackPanel>
-          <TextBlock Text="异常剔除数" Foreground="#9FC8FF" />
-          <TextBlock Text="{Binding RejectCount}" Foreground="White" FontSize="30" FontWeight="Bold" />
-        </StackPanel>
-      </Border>
-      <Border Background="#14335C" CornerRadius="16" Margin="0,0,12,0" Padding="18">
-        <StackPanel>
-          <TextBlock Text="当前模型" Foreground="#9FC8FF" />
-          <TextBlock Text="{Binding ModelVersion}" Foreground="White" FontSize="24" FontWeight="Bold" />
-        </StackPanel>
-      </Border>
-      <Border Background="#20D58C" CornerRadius="16" Padding="18">
-        <StackPanel>
-          <TextBlock Text="良率" Foreground="#08321E" />
-          <TextBlock Text="{Binding YieldRate}" Foreground="#04131F" FontSize="30" FontWeight="Bold" />
-        </StackPanel>
-      </Border>
-    </UniformGrid>
+    <DockPanel Margin="0,0,0,12">
+      <Button DockPanel.Dock="Right"
+              Padding="18,10"
+              Background="#2E6F9E"
+              Foreground="#F3F8FC"
+              BorderBrush="#7FAFD2"
+              BorderThickness="1"
+              FontWeight="Bold"
+              Command="{Binding OpenHistoryStatisticsCommand}">
+        <TextBlock Text="历史统计" />
+      </Button>
+      <ItemsControl ItemsSource="{Binding KpiCards}" Margin="0,0,12,0">
+        <ItemsControl.ItemsPanel>
+          <ItemsPanelTemplate>
+            <UniformGrid Columns="5" />
+          </ItemsPanelTemplate>
+        </ItemsControl.ItemsPanel>
+        <ItemsControl.ItemTemplate>
+          <DataTemplate>
+            <Border Background="{StaticResource PanelSecondaryBackground}"
+                    CornerRadius="4"
+                    BorderBrush="{StaticResource OutlineBrush}"
+                    BorderThickness="1"
+                    Margin="0,0,10,0"
+                    Padding="0">
+              <Grid>
+                <Border Height="4"
+                        VerticalAlignment="Top"
+                        Background="{Binding AccentColor}"
+                        Opacity="0.9" />
+                <Grid Margin="16,16,16,14">
+                  <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="46" />
+                  </Grid.ColumnDefinitions>
+                  <StackPanel>
+                    <TextBlock Text="{Binding Title}" Foreground="{StaticResource MutedTextBrush}" FontSize="15" />
+                    <TextBlock Text="{Binding Value}"
+                               Foreground="{Binding ValueColor}"
+                               FontSize="26"
+                               FontWeight="Bold"
+                               Margin="0,6,0,0"
+                               TextTrimming="CharacterEllipsis" />
+                  </StackPanel>
+                  <Border Grid.Column="1"
+                          Width="44"
+                          Height="44"
+                          CornerRadius="4"
+                          Background="#244C6D"
+                          Opacity="0.86"
+                          HorizontalAlignment="Right"
+                          VerticalAlignment="Top">
+                    <TextBlock Text="{Binding Icon}"
+                               FontFamily="Segoe MDL2 Assets"
+                               Foreground="{Binding AccentColor}"
+                               FontSize="22"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center" />
+                  </Border>
+                </Grid>
+              </Grid>
+            </Border>
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+      </ItemsControl>
+    </DockPanel>
 
     <Grid Grid.Row="1" Margin="0,0,0,16">
       <Grid.ColumnDefinitions>
@@ -41,16 +81,23 @@
         <ColumnDefinition Width="*" />
       </Grid.ColumnDefinitions>
 
-      <Border Background="#122C52" CornerRadius="16" Padding="20" Margin="0,0,12,0">
+      <Border Background="{StaticResource PanelBackground}" CornerRadius="4" BorderBrush="{StaticResource OutlineBrush}" BorderThickness="1" Padding="20" Margin="0,0,12,0">
         <StackPanel>
-          <TextBlock Text="设备状态" Foreground="White" FontSize="20" FontWeight="SemiBold" Margin="0,0,0,14" />
+          <TextBlock Text="设备状态" Foreground="White" FontSize="20" FontWeight="SemiBold" Margin="0,0,0,10" />
+          <TextBlock Text="{Binding ModelVersion, StringFormat=当前模型: {0}}" Foreground="#9FC8FF" Margin="0,0,0,8" />
           <ItemsControl ItemsSource="{Binding DeviceSummaries}">
             <ItemsControl.ItemTemplate>
               <DataTemplate>
-                <Border Background="#17335D" CornerRadius="12" Margin="0,0,0,10" Padding="14">
+                <Border Background="#143451" CornerRadius="4" Margin="0,0,0,6" Padding="12,8">
                   <DockPanel>
-                    <TextBlock Text="{Binding Name}" Foreground="White" FontWeight="SemiBold" />
-                    <TextBlock Text="{Binding Status}" Foreground="#20D58C" DockPanel.Dock="Right" />
+                    <StackPanel Orientation="Horizontal">
+                      <Ellipse Width="11" Height="11" Fill="{Binding StatusColor}" Margin="0,0,10,0" VerticalAlignment="Center" />
+                      <TextBlock Text="{Binding Name}" Foreground="White" FontWeight="SemiBold" />
+                    </StackPanel>
+                    <TextBlock Text="{Binding Status}"
+                               Foreground="{Binding StatusColor}"
+                               FontWeight="SemiBold"
+                               DockPanel.Dock="Right" />
                   </DockPanel>
                 </Border>
               </DataTemplate>
@@ -59,24 +106,114 @@
         </StackPanel>
       </Border>
 
-      <Border Grid.Column="1" Background="#122C52" CornerRadius="16" Padding="20">
+      <Border Grid.Column="1" Background="{StaticResource PanelBackground}" CornerRadius="4" BorderBrush="{StaticResource OutlineBrush}" BorderThickness="1" Padding="20">
         <StackPanel>
-          <TextBlock Text="当前告警策略" Foreground="White" FontSize="20" FontWeight="SemiBold" Margin="0,0,0,14" />
-          <TextBlock Text="推理超时 -> 告警停机" Foreground="#CFE2FF" Margin="0,0,0,10" />
-          <TextBlock Text="设备掉线 -> 受限运行/停机" Foreground="#CFE2FF" Margin="0,0,0,10" />
-          <TextBlock Text="低置信目标 -> 按配方剔除或停机" Foreground="#CFE2FF" />
+          <TextBlock Text="当前告警策略" Foreground="White" FontSize="20" FontWeight="SemiBold" Margin="0,0,0,10" />
+          <ItemsControl ItemsSource="{Binding AlarmPolicies}">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate>
+                <Grid Margin="0,0,0,7">
+                  <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                  </Grid.ColumnDefinitions>
+                  <TextBlock Text="{Binding Trigger}" Foreground="#CFE2FF" VerticalAlignment="Center" />
+                  <TextBlock Grid.Column="1" Text=" -> " Foreground="{StaticResource MutedTextBrush}" Margin="10,0" VerticalAlignment="Center" />
+                  <Border Grid.Column="2" Background="#183452" CornerRadius="4" Padding="10,4">
+                    <TextBlock Text="{Binding Action}" Foreground="{Binding ActionColor}" FontWeight="SemiBold" />
+                  </Border>
+                </Grid>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
         </StackPanel>
       </Border>
     </Grid>
 
-    <Border Grid.Row="2" Background="#122C52" CornerRadius="16" Padding="20">
-      <StackPanel>
-        <TextBlock Text="V1 落地重点" Foreground="White" FontSize="20" FontWeight="SemiBold" Margin="0,0,0,14" />
-        <TextBlock Text="1. 按海鲜类别绑定模型，支持多版本启用与回滚" Foreground="#CFE2FF" Margin="0,0,0,8" />
-        <TextBlock Text="2. 实时链路独立于 HMI，避免界面卡顿影响剔除控制" Foreground="#CFE2FF" Margin="0,0,0,8" />
-        <TextBlock Text="3. 产品配方同时承载工艺参数与模型切换策略" Foreground="#CFE2FF" Margin="0,0,0,8" />
-        <TextBlock Text="4. 为 MES 保留同步接口，但本地单机可独立运行" Foreground="#CFE2FF" />
-      </StackPanel>
+    <Border Grid.Row="2" Background="{StaticResource PanelBackground}" CornerRadius="4" BorderBrush="{StaticResource OutlineBrush}" BorderThickness="1" Padding="20">
+      <Grid>
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="1.2*" />
+          <ColumnDefinition Width="1*" />
+        </Grid.ColumnDefinitions>
+        <StackPanel>
+          <TextBlock Text="{Binding DashboardStatus}" Foreground="#9FC8FF" FontWeight="SemiBold" Margin="0,0,0,14" />
+          <DockPanel Margin="0,0,0,12">
+            <TextBlock Text="缺陷类型分布" Foreground="White" FontSize="20" FontWeight="SemiBold" />
+            <TextBlock Text="当前检测任务" Foreground="#FFB15A" FontSize="16" FontWeight="SemiBold" DockPanel.Dock="Right" />
+          </DockPanel>
+          <ItemsControl ItemsSource="{Binding DefectOverviewRows}">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate>
+                <Border Background="#143451" CornerRadius="4" Padding="12,9" Margin="0,0,0,8">
+                  <Grid>
+                    <Grid.ColumnDefinitions>
+                      <ColumnDefinition Width="110" />
+                      <ColumnDefinition Width="300" />
+                      <ColumnDefinition Width="72" />
+                      <ColumnDefinition Width="60" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Text="{Binding Label}" Foreground="{StaticResource TextBrush}" FontWeight="SemiBold" VerticalAlignment="Center" />
+                    <Grid Grid.Column="1" Height="10" VerticalAlignment="Center">
+                      <Border Background="#0D2238" CornerRadius="4" />
+                      <Border Width="{Binding BarWidth}"
+                              Background="{Binding Color}"
+                              CornerRadius="4"
+                              HorizontalAlignment="Left" />
+                    </Grid>
+                    <TextBlock Grid.Column="2" Text="{Binding PercentText}" Foreground="{StaticResource MutedTextBrush}" HorizontalAlignment="Right" VerticalAlignment="Center" />
+                    <TextBlock Grid.Column="3" Text="{Binding Value}" Foreground="{Binding Color}" FontSize="21" FontWeight="Bold" HorizontalAlignment="Right" VerticalAlignment="Center" />
+                  </Grid>
+                </Border>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+        </StackPanel>
+
+        <Border Grid.Column="1" Background="#102B44" CornerRadius="4" BorderBrush="#456780" BorderThickness="1" Padding="18" Margin="18,0,0,0">
+          <StackPanel>
+            <TextBlock Text="最近异常 X 光" Foreground="White" FontSize="20" FontWeight="SemiBold" />
+            <Border Background="#07162A" CornerRadius="4" BorderBrush="#6B879C" BorderThickness="1" Height="142" Margin="0,14,0,0">
+              <Grid>
+                <Rectangle Fill="#DDE4E6" Opacity="0.9" Margin="16,42,16,36" />
+                <Ellipse Width="58" Height="30" Fill="#26313A" Opacity="0.88" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="-80,0,0,0" />
+                <Ellipse Width="62" Height="32" Fill="#1D262E" Opacity="0.9" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="94,20,0,0" />
+                <Border BorderBrush="#4C63FF" BorderThickness="2" Width="72" Height="52" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="94,20,0,0" />
+                <Border Background="#081A2E" CornerRadius="4" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="12" Padding="8,5" Opacity="0.92">
+                  <TextBlock Text="empty 0.954" Foreground="White" FontWeight="Bold" />
+                </Border>
+              </Grid>
+            </Border>
+            <TextBlock Text="{Binding LatestAbnormalImageName}" Foreground="#D7EBFF" TextWrapping="Wrap" Margin="0,12,0,0" />
+            <TextBlock Text="{Binding LatestAbnormalSummary}" Foreground="#FFB15A" FontWeight="SemiBold" TextWrapping="Wrap" Margin="0,8,0,0" />
+            <TextBlock Text="通道 KPI" Foreground="White" FontSize="20" FontWeight="SemiBold" Margin="0,18,0,10" />
+            <ItemsControl ItemsSource="{Binding ChannelCards}">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                  <Border Background="#143451" CornerRadius="4" BorderBrush="{StaticResource OutlineBrush}" BorderThickness="1" Padding="12,9" Margin="0,0,0,8">
+                    <Grid>
+                      <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                      </Grid.ColumnDefinitions>
+                      <StackPanel>
+                        <TextBlock Text="{Binding ChannelName}" Foreground="White" FontWeight="Bold" />
+                        <TextBlock Text="{Binding ProductAndModel}" Foreground="#9FC8FF" Margin="0,4,0,0" />
+                        <TextBlock Text="{Binding CountSummary}" Foreground="#CFE2FF" Margin="0,4,0,0" />
+                      </StackPanel>
+                      <StackPanel Grid.Column="1" HorizontalAlignment="Right">
+                        <TextBlock Text="{Binding Status}" Foreground="{Binding StatusColor}" FontWeight="Bold" HorizontalAlignment="Right" />
+                        <TextBlock Text="{Binding YieldRate}" Foreground="#20D58C" FontSize="18" FontWeight="Bold" HorizontalAlignment="Right" Margin="0,8,0,0" />
+                      </StackPanel>
+                    </Grid>
+                  </Border>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+          </StackPanel>
+        </Border>
+      </Grid>
     </Border>
   </Grid>
 </UserControl>

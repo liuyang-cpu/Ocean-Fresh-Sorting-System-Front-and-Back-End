@@ -1,0 +1,85 @@
+@startuml
+skinparam defaultFontName "Microsoft YaHei"
+skinparam shadowing false
+skinparam dpi 160
+skinparam packageStyle rectangle
+skinparam roundCorner 12
+skinparam actorStyle awesome
+skinparam ArrowColor #475569
+skinparam UsecaseBorderColor #7C3AED
+skinparam UsecaseBackgroundColor #F5F3FF
+skinparam PackageBorderColor #DDD6FE
+skinparam PackageBackgroundColor #FAF5FF
+skinparam ActorBorderColor #4C1D95
+skinparam ActorBackgroundColor #EDE9FE
+
+left to right direction
+title 数据中心与异常复核用例图
+
+actor "操作员" as Operator
+actor "管理员" as Admin
+
+Admin --|> Operator
+
+rectangle "数据中心" {
+  package "历史数据查看" {
+    usecase "按海鲜产品筛选" as UC_FilterProduct
+    usecase "按时间范围筛选\n1 天 / 7 天 / 30 天" as UC_FilterTime
+    usecase "查看良率环形图" as UC_YieldChart
+    usecase "查看缺陷数量排行" as UC_DefectRank
+    usecase "查看良率趋势" as UC_YieldTrend
+    usecase "查看检测任务记录" as UC_TaskList
+    usecase "查看任务详情\n占比与缺陷分布" as UC_TaskDetail
+  }
+
+  package "异常剔除复核与模型评估" {
+    usecase "查看异常剔除集合 S" as UC_SetS
+    usecase "查看异常框信息\n标签 / 置信度 / 框位置" as UC_BoxInfo
+    usecase "确认异常" as UC_ConfirmAbnormal
+    usecase "标记误剔" as UC_FalseReject
+    usecase "修正异常类别" as UC_FixClass
+    usecase "计算异常确认率" as UC_ConfirmRate
+    usecase "计算误剔率" as UC_FalseRejectRate
+    usecase "统计类别修正数量" as UC_FixCount
+  }
+
+  package "后续增强" {
+    usecase "异常图片追溯" as UC_Trace
+    usecase "导出检测任务报表" as UC_Report
+  }
+}
+
+Operator --> UC_FilterProduct
+Operator --> UC_FilterTime
+Operator --> UC_YieldChart
+Operator --> UC_DefectRank
+Operator --> UC_YieldTrend
+Operator --> UC_TaskList
+Operator --> UC_TaskDetail
+
+Admin --> UC_SetS
+Admin --> UC_ConfirmAbnormal
+Admin --> UC_FalseReject
+Admin --> UC_FixClass
+Admin --> UC_Trace
+Admin --> UC_Report
+
+UC_YieldChart .> UC_FilterProduct : <<include>>
+UC_DefectRank .> UC_FilterProduct : <<include>>
+UC_YieldTrend .> UC_FilterTime : <<include>>
+UC_TaskList .> UC_FilterTime : <<include>>
+UC_TaskDetail .> UC_TaskList : <<extend>>
+UC_SetS .> UC_TaskDetail : <<include>>
+UC_SetS .> UC_BoxInfo : <<include>>
+UC_ConfirmRate .> UC_ConfirmAbnormal : <<include>>
+UC_FalseRejectRate .> UC_FalseReject : <<include>>
+UC_FixCount .> UC_FixClass : <<include>>
+UC_Trace .> UC_TaskDetail : <<extend>>
+UC_Report .> UC_TaskList : <<extend>>
+
+note right of UC_SetS
+  当前版本只复核模型判定为异常的集合 S。
+  未复核未剔除集合时，不宣称严格召回率。
+end note
+
+@enduml

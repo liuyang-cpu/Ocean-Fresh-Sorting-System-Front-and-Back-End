@@ -3,8 +3,22 @@
     <OutputType>WinExe</OutputType>
     <UseWPF>true</UseWPF>
     <TargetFramework>net8.0-windows</TargetFramework>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\OceanFresh.SortingSystem.Application\OceanFresh.SortingSystem.Application.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="..\..\predict\yolo\predict.json">
+      <Link>predict\yolo\predict.json</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\..\predict\youge\predict_youge.json">
+      <Link>predict\youge\predict_youge.json</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Assets\Figma\*.png" />
   </ItemGroup>
 </Project>

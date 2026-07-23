@@ -1,0 +1,886 @@
+<UserControl x:Class="OceanFresh.SortingSystem.HMI.Pages.UserCenterPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             FontFamily="Noto Sans SC"
+             Background="#061522"
+             SnapsToDevicePixels="True"
+             UseLayoutRounding="True">
+  <UserControl.Resources>
+    <Style x:Key="UserCenterButtonStyle" TargetType="Button">
+      <Setter Property="OverridesDefaultStyle" Value="True" />
+      <Setter Property="Background" Value="#092036" />
+      <Setter Property="Foreground" Value="#D8E8F7" />
+      <Setter Property="BorderBrush" Value="#2B648C" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="FontFamily" Value="Noto Sans SC" />
+      <Setter Property="FontSize" Value="14" />
+      <Setter Property="FontWeight" Value="Bold" />
+      <Setter Property="Padding" Value="0" />
+      <Setter Property="MinHeight" Value="0" />
+      <Setter Property="MinWidth" Value="0" />
+      <Setter Property="Cursor" Value="Hand" />
+      <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+      <Setter Property="Template">
+        <Setter.Value>
+          <ControlTemplate TargetType="Button">
+            <Border x:Name="Chrome"
+                    Background="{TemplateBinding Background}"
+                    BorderBrush="{TemplateBinding BorderBrush}"
+                    BorderThickness="{TemplateBinding BorderThickness}"
+                    CornerRadius="4">
+              <ContentPresenter HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                TextElement.Foreground="{TemplateBinding Foreground}" />
+            </Border>
+            <ControlTemplate.Triggers>
+              <Trigger Property="IsMouseOver" Value="True">
+                <Setter TargetName="Chrome" Property="Background" Value="#10304B" />
+              </Trigger>
+              <Trigger Property="IsPressed" Value="True">
+                <Setter TargetName="Chrome" Property="Opacity" Value="0.78" />
+              </Trigger>
+              <Trigger Property="IsEnabled" Value="False">
+                <Setter TargetName="Chrome" Property="Opacity" Value="0.42" />
+              </Trigger>
+            </ControlTemplate.Triggers>
+          </ControlTemplate>
+        </Setter.Value>
+      </Setter>
+    </Style>
+
+    <Style x:Key="UserCenterPageButtonStyle"
+           TargetType="Button"
+           BasedOn="{StaticResource UserCenterButtonStyle}">
+      <Setter Property="Width" Value="34" />
+      <Setter Property="Height" Value="30" />
+      <Setter Property="FontSize" Value="14" />
+      <Style.Triggers>
+        <DataTrigger Binding="{Binding IsSelected}" Value="True">
+          <Setter Property="Background" Value="#1263AE" />
+          <Setter Property="BorderBrush" Value="#328EE8" />
+          <Setter Property="Foreground" Value="#FFFFFF" />
+        </DataTrigger>
+      </Style.Triggers>
+    </Style>
+
+    <Style x:Key="UserCenterComboBoxItemStyle" TargetType="ComboBoxItem">
+      <Setter Property="Background" Value="#092036" />
+      <Setter Property="Foreground" Value="#E8F3FF" />
+      <Setter Property="FontFamily" Value="Noto Sans SC" />
+      <Setter Property="FontSize" Value="14" />
+      <Setter Property="Padding" Value="12,7" />
+      <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+      <Setter Property="Template">
+        <Setter.Value>
+          <ControlTemplate TargetType="ComboBoxItem">
+            <Border x:Name="ItemChrome"
+                    Background="{TemplateBinding Background}"
+                    Padding="{TemplateBinding Padding}">
+              <ContentPresenter TextElement.Foreground="{TemplateBinding Foreground}" />
+            </Border>
+            <ControlTemplate.Triggers>
+              <Trigger Property="IsHighlighted" Value="True">
+                <Setter TargetName="ItemChrome" Property="Background" Value="#123A58" />
+              </Trigger>
+              <Trigger Property="IsSelected" Value="True">
+                <Setter TargetName="ItemChrome" Property="Background" Value="#1263AE" />
+              </Trigger>
+            </ControlTemplate.Triggers>
+          </ControlTemplate>
+        </Setter.Value>
+      </Setter>
+    </Style>
+
+    <Style x:Key="UserCenterComboBoxStyle" TargetType="ComboBox">
+      <Setter Property="OverridesDefaultStyle" Value="True" />
+      <Setter Property="Foreground" Value="#E8F3FF" />
+      <Setter Property="Background" Value="#071D31" />
+      <Setter Property="BorderBrush" Value="#2B648C" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="FontFamily" Value="Noto Sans SC" />
+      <Setter Property="FontSize" Value="14" />
+      <Setter Property="MinHeight" Value="0" />
+      <Setter Property="MinWidth" Value="0" />
+      <Setter Property="Padding" Value="0" />
+      <Setter Property="ItemContainerStyle" Value="{StaticResource UserCenterComboBoxItemStyle}" />
+      <Setter Property="Template">
+        <Setter.Value>
+          <ControlTemplate TargetType="ComboBox">
+            <Grid>
+              <Border x:Name="Chrome"
+                      Background="{TemplateBinding Background}"
+                      BorderBrush="{TemplateBinding BorderBrush}"
+                      BorderThickness="{TemplateBinding BorderThickness}"
+                      CornerRadius="4">
+                <Grid>
+                  <ContentPresenter Margin="13,0,28,0"
+                                    HorizontalAlignment="Left"
+                                    VerticalAlignment="Center"
+                                    Content="{TemplateBinding SelectionBoxItem}"
+                                    ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}"
+                                    TextElement.Foreground="{TemplateBinding Foreground}" />
+                  <Path Width="9"
+                        Height="5"
+                        Margin="0,0,11,0"
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Center"
+                        Data="M0,0 L4.5,4.5 L9,0"
+                        Fill="Transparent"
+                        Stroke="#A9BED2"
+                        StrokeThickness="1.5"
+                        StrokeStartLineCap="Round"
+                        StrokeEndLineCap="Round"
+                        StrokeLineJoin="Round"
+                        IsHitTestVisible="False" />
+                </Grid>
+              </Border>
+              <ToggleButton Background="Transparent"
+                            BorderThickness="0"
+                            Focusable="False"
+                            ClickMode="Press"
+                            IsChecked="{Binding IsDropDownOpen, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}">
+                <ToggleButton.Template>
+                  <ControlTemplate TargetType="ToggleButton">
+                    <Border Background="Transparent" />
+                  </ControlTemplate>
+                </ToggleButton.Template>
+              </ToggleButton>
+              <Popup x:Name="PART_Popup"
+                     Placement="Bottom"
+                     AllowsTransparency="True"
+                     Focusable="False"
+                     IsOpen="{TemplateBinding IsDropDownOpen}"
+                     PopupAnimation="Fade">
+                <Border Margin="0,4,0,0"
+                        MinWidth="{Binding ActualWidth, RelativeSource={RelativeSource TemplatedParent}}"
+                        Background="#071D31"
+                        BorderBrush="#2B648C"
+                        BorderThickness="1"
+                        CornerRadius="4">
+                  <ScrollViewer MaxHeight="260">
+                    <ItemsPresenter />
+                  </ScrollViewer>
+                </Border>
+              </Popup>
+            </Grid>
+            <ControlTemplate.Triggers>
+              <Trigger Property="IsMouseOver" Value="True">
+                <Setter TargetName="Chrome" Property="BorderBrush" Value="#328EE8" />
+              </Trigger>
+              <Trigger Property="IsKeyboardFocusWithin" Value="True">
+                <Setter TargetName="Chrome" Property="BorderBrush" Value="#328EE8" />
+              </Trigger>
+            </ControlTemplate.Triggers>
+          </ControlTemplate>
+        </Setter.Value>
+      </Setter>
+    </Style>
+
+    <DataTemplate x:Key="PermissionIndicatorTemplate">
+      <Viewbox Width="18" Height="18">
+        <Grid Width="24" Height="24">
+          <Grid Visibility="{Binding IsAllowed, Converter={StaticResource BoolToVisibilityConverter}}">
+            <Ellipse Fill="#0A3B34" Stroke="#20D98B" StrokeThickness="1.5" />
+            <Path Data="M6.5,12.2 L10.2,15.4 L17.7,7.8"
+                  Fill="Transparent"
+                  Stroke="#20D98B"
+                  StrokeThickness="2"
+                  StrokeStartLineCap="Round"
+                  StrokeEndLineCap="Round"
+                  StrokeLineJoin="Round" />
+          </Grid>
+          <Grid Visibility="{Binding IsAllowed, Converter={StaticResource InverseBoolToVisibilityConverter}}">
+            <Ellipse Fill="#10283B" Stroke="#60798F" StrokeThickness="1.4" />
+            <Path Data="M8,10 L8,8.2 C8,5.9 9.7,4.5 12,4.5 C14.3,4.5 16,5.9 16,8.2 L16,10 M6.8,10 L17.2,10 L17.2,18 L6.8,18 Z M12,13 L12,15.5"
+                  Fill="Transparent"
+                  Stroke="#8EA9C4"
+                  StrokeThickness="1.6"
+                  StrokeStartLineCap="Round"
+                  StrokeEndLineCap="Round"
+                  StrokeLineJoin="Round" />
+          </Grid>
+        </Grid>
+      </Viewbox>
+    </DataTemplate>
+  </UserControl.Resources>
+
+  <Viewbox Stretch="Fill" StretchDirection="Both">
+    <Canvas Width="1576" Height="842" Background="#061522">
+      <Border Canvas.Left="0"
+              Canvas.Top="0"
+              Width="1576"
+              Height="842"
+              Background="#061D31"
+              BorderBrush="#164B70"
+              BorderThickness="1"
+              CornerRadius="6" />
+
+      <Border Canvas.Left="16"
+              Canvas.Top="22"
+              Width="520"
+              Height="222"
+              Background="#0B1F34"
+              BorderBrush="#164B70"
+              BorderThickness="1"
+              CornerRadius="4">
+        <Canvas>
+          <TextBlock Canvas.Left="21"
+                     Canvas.Top="15"
+                     Width="120"
+                     Height="34"
+                     Text="当前用户"
+                     Foreground="#E8F3FF"
+                     FontSize="22"
+                     FontWeight="Bold"
+                     LineHeight="30"
+                     LineStackingStrategy="BlockLineHeight" />
+
+          <Ellipse Canvas.Left="23"
+                   Canvas.Top="65"
+                   Width="72"
+                   Height="72"
+                   Fill="#123A58"
+                   Stroke="#328EE8"
+                   StrokeThickness="2" />
+          <Ellipse Canvas.Left="47"
+                   Canvas.Top="80"
+                   Width="24"
+                   Height="24"
+                   Fill="Transparent"
+                   Stroke="#BFE6FF"
+                   StrokeThickness="2.2" />
+          <Path Data="M 36,128 C 37,114 46,107 59,107 C 72,107 81,114 82,128"
+                Fill="Transparent"
+                Stroke="#BFE6FF"
+                StrokeThickness="2.2"
+                StrokeStartLineCap="Round"
+                StrokeEndLineCap="Round" />
+
+          <TextBlock Canvas.Left="117"
+                     Canvas.Top="61"
+                     Width="190"
+                     Height="34"
+                     Text="{Binding UserName}"
+                     Foreground="#FFFFFF"
+                     FontSize="26"
+                     FontWeight="Bold"
+                     LineHeight="35"
+                     LineStackingStrategy="BlockLineHeight"
+                     TextTrimming="CharacterEllipsis" />
+
+          <Border Canvas.Left="117"
+                  Canvas.Top="103"
+                  Width="66"
+                  Height="26"
+                  Background="#1263AE"
+                  CornerRadius="4">
+            <TextBlock Text="{Binding RoleName}"
+                       Foreground="#E8F3FF"
+                       FontSize="13"
+                       FontWeight="Bold"
+                       TextAlignment="Center"
+                       LineHeight="26"
+                       LineStackingStrategy="BlockLineHeight" />
+          </Border>
+          <Border Canvas.Left="195"
+                  Canvas.Top="103"
+                  Width="52"
+                  Height="26"
+                  Background="#0D6B4D"
+                  CornerRadius="4">
+            <TextBlock Text="在线"
+                       Foreground="#20D98B"
+                       FontSize="13"
+                       FontWeight="Bold"
+                       TextAlignment="Center"
+                       LineHeight="26"
+                       LineStackingStrategy="BlockLineHeight" />
+          </Border>
+
+          <TextBlock Canvas.Left="21"
+                     Canvas.Top="151"
+                     Width="260"
+                     Height="24"
+                     Text="{Binding LoginTimeText}"
+                     Foreground="#A9BED2"
+                     FontSize="14"
+                     LineHeight="24"
+                     LineStackingStrategy="BlockLineHeight" />
+          <TextBlock Canvas.Left="301"
+                     Canvas.Top="151"
+                     Width="180"
+                     Height="24"
+                     Text="{Binding LoginDurationText}"
+                     Foreground="#A9BED2"
+                     FontSize="14"
+                     LineHeight="24"
+                     LineStackingStrategy="BlockLineHeight" />
+          <TextBlock Canvas.Left="21"
+                     Canvas.Top="181"
+                     Width="300"
+                     Height="24"
+                     Text="{Binding LoginMethodText}"
+                     Foreground="#A9BED2"
+                     FontSize="14"
+                     LineHeight="24"
+                     LineStackingStrategy="BlockLineHeight" />
+        </Canvas>
+      </Border>
+
+      <Border Canvas.Left="552"
+              Canvas.Top="22"
+              Width="994"
+              Height="222"
+              Background="#0B1F34"
+              BorderBrush="#164B70"
+              BorderThickness="1"
+              CornerRadius="4">
+        <Canvas>
+          <TextBlock Canvas.Left="21"
+                     Canvas.Top="15"
+                     Width="150"
+                     Height="34"
+                     Text="{Binding PermissionTitle}"
+                     Foreground="#E8F3FF"
+                     FontSize="22"
+                     FontWeight="Bold"
+                     LineHeight="30"
+                     LineStackingStrategy="BlockLineHeight" />
+          <TextBlock Canvas.Left="165"
+                     Canvas.Top="15"
+                     Width="180"
+                     Height="34"
+                     Text="{Binding PermissionSubtitle}"
+                     Foreground="#8EA9C4"
+                     FontSize="14"
+                     LineHeight="34"
+                     LineStackingStrategy="BlockLineHeight" />
+
+          <Border Canvas.Left="21"
+                   Canvas.Top="61"
+                   Width="948"
+                   Height="34"
+                   Background="#123A58"
+                   CornerRadius="3">
+            <Grid>
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="218" />
+                <ColumnDefinition Width="104" />
+                <ColumnDefinition Width="104" />
+                <ColumnDefinition Width="*" />
+              </Grid.ColumnDefinitions>
+              <TextBlock Grid.Column="0"
+                         Margin="18,0,0,0"
+                         Text="模块"
+                         Foreground="#D7E9FA"
+                         FontSize="14"
+                         FontWeight="SemiBold"
+                         VerticalAlignment="Center" />
+              <Border Grid.Column="1" BorderBrush="#235676" BorderThickness="1,0,0,0">
+                <TextBlock Text="可进入"
+                           Foreground="#D7E9FA"
+                           FontSize="14"
+                           FontWeight="SemiBold"
+                           TextAlignment="Center"
+                           VerticalAlignment="Center" />
+              </Border>
+              <Border Grid.Column="2" BorderBrush="#235676" BorderThickness="1,0,0,0">
+                <TextBlock Text="可操作"
+                           Foreground="#D7E9FA"
+                           FontSize="14"
+                           FontWeight="SemiBold"
+                           TextAlignment="Center"
+                           VerticalAlignment="Center" />
+              </Border>
+              <Border Grid.Column="3" BorderBrush="#235676" BorderThickness="1,0,0,0">
+                <TextBlock Margin="18,0,0,0"
+                           Text="说明"
+                           Foreground="#D7E9FA"
+                           FontSize="14"
+                           FontWeight="SemiBold"
+                           VerticalAlignment="Center" />
+              </Border>
+            </Grid>
+          </Border>
+
+          <ItemsControl Canvas.Left="21"
+                        Canvas.Top="95"
+                        Width="948"
+                        Height="120"
+                        ItemsSource="{Binding PermissionRows}">
+            <ItemsControl.ItemsPanel>
+              <ItemsPanelTemplate>
+                <StackPanel />
+              </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+              <DataTemplate>
+                <Border Width="948"
+                        Height="24"
+                        Background="{Binding RowBackground}">
+                  <Grid>
+                    <Grid.ColumnDefinitions>
+                      <ColumnDefinition Width="218" />
+                      <ColumnDefinition Width="104" />
+                      <ColumnDefinition Width="104" />
+                      <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0"
+                               Margin="18,0,0,0"
+                               Text="{Binding ModuleName}"
+                               Foreground="{Binding TextForeground}"
+                               FontSize="13"
+                               FontWeight="{Binding ModuleFontWeight}"
+                               VerticalAlignment="Center" />
+                    <Border Grid.Column="1" BorderBrush="#123C58" BorderThickness="1,0,0,0">
+                      <ContentControl HorizontalAlignment="Center"
+                                      VerticalAlignment="Center"
+                                      Content="{Binding}"
+                                      ContentTemplate="{StaticResource PermissionIndicatorTemplate}" />
+                    </Border>
+                    <Border Grid.Column="2" BorderBrush="#123C58" BorderThickness="1,0,0,0">
+                      <ContentControl HorizontalAlignment="Center"
+                                      VerticalAlignment="Center"
+                                      Content="{Binding}"
+                                      ContentTemplate="{StaticResource PermissionIndicatorTemplate}" />
+                    </Border>
+                    <Border Grid.Column="3" BorderBrush="#123C58" BorderThickness="1,0,0,0">
+                      <TextBlock Margin="18,0,0,0"
+                                 Text="{Binding Description}"
+                                 Foreground="{Binding DescriptionForeground}"
+                                 FontSize="13"
+                                 VerticalAlignment="Center" />
+                    </Border>
+                  </Grid>
+                </Border>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+        </Canvas>
+      </Border>
+
+      <Border Canvas.Left="16"
+              Canvas.Top="262"
+              Width="1530"
+              Height="546"
+              Background="#0B1F34"
+              BorderBrush="#164B70"
+              BorderThickness="1"
+              CornerRadius="4">
+        <Canvas>
+          <TextBlock Canvas.Left="21"
+                     Canvas.Top="15"
+                     Width="190"
+                     Height="38"
+                     Text="重要操作记录"
+                     Foreground="#E8F3FF"
+                     FontSize="24"
+                     FontWeight="Bold"
+                     LineHeight="32"
+                     LineStackingStrategy="BlockLineHeight" />
+          <TextBlock Canvas.Left="211"
+                     Canvas.Top="17"
+                     Width="520"
+                     Height="34"
+                     Text="{Binding AuditScopeText}"
+                     Foreground="#8EA9C4"
+                     FontSize="14"
+                     LineHeight="34"
+                     LineStackingStrategy="BlockLineHeight" />
+
+          <TextBlock Canvas.Left="21"
+                     Canvas.Top="73"
+                     Width="68"
+                     Height="34"
+                     Text="时间范围"
+                     Foreground="#8EA9C4"
+                     FontSize="13"
+                     LineHeight="34"
+                     LineStackingStrategy="BlockLineHeight" />
+          <ComboBox Canvas.Left="93"
+                    Canvas.Top="73"
+                    Width="128"
+                    Height="34"
+                    Style="{StaticResource UserCenterComboBoxStyle}"
+                    ItemsSource="{Binding TimeRangeOptions}"
+                    SelectedItem="{Binding SelectedTimeRange, Mode=TwoWay}" />
+
+          <TextBlock Canvas.Left="241"
+                     Canvas.Top="73"
+                     Width="68"
+                     Height="34"
+                     Text="操作类型"
+                     Foreground="#8EA9C4"
+                     FontSize="13"
+                     LineHeight="34"
+                     LineStackingStrategy="BlockLineHeight" />
+          <ComboBox Canvas.Left="315"
+                    Canvas.Top="73"
+                    Width="150"
+                    Height="34"
+                    Style="{StaticResource UserCenterComboBoxStyle}"
+                    ItemsSource="{Binding OperationTypeOptions}"
+                    SelectedItem="{Binding SelectedOperationType, Mode=TwoWay}" />
+
+          <Border Canvas.Left="485"
+                  Canvas.Top="73"
+                  Width="320"
+                  Height="34"
+                  Background="#071D31"
+                  BorderBrush="#2B648C"
+                  BorderThickness="1"
+                  CornerRadius="4">
+            <Grid>
+              <TextBlock Width="30"
+                         Margin="12,0,0,0"
+                         HorizontalAlignment="Left"
+                         VerticalAlignment="Center"
+                         Text="⌕"
+                         TextAlignment="Center"
+                         Foreground="#8EA9C4"
+                         FontSize="15" />
+              <TextBox x:Name="SearchInput"
+                       Margin="45,0,12,0"
+                       VerticalContentAlignment="Center"
+                       Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
+                       Foreground="#E8F3FF"
+                       Background="Transparent"
+                       BorderThickness="0"
+                       FontFamily="Noto Sans SC"
+                       FontSize="14"
+                       CaretBrush="#E8F3FF" />
+              <TextBlock Margin="45,0,12,0"
+                         VerticalAlignment="Center"
+                         Text="搜索操作内容"
+                         Foreground="#8EA9C4"
+                         FontSize="14"
+                         IsHitTestVisible="False">
+                <TextBlock.Style>
+                  <Style TargetType="TextBlock">
+                    <Setter Property="Visibility" Value="Collapsed" />
+                    <Style.Triggers>
+                      <DataTrigger Binding="{Binding Text, ElementName=SearchInput}" Value="">
+                        <Setter Property="Visibility" Value="Visible" />
+                      </DataTrigger>
+                      <DataTrigger Binding="{Binding Text, ElementName=SearchInput}" Value="{x:Null}">
+                        <Setter Property="Visibility" Value="Visible" />
+                      </DataTrigger>
+                    </Style.Triggers>
+                  </Style>
+                </TextBlock.Style>
+              </TextBlock>
+            </Grid>
+          </Border>
+
+          <Button Canvas.Left="821"
+                  Canvas.Top="73"
+                  Width="72"
+                  Height="34"
+                  Style="{StaticResource UserCenterButtonStyle}"
+                  Content="重置"
+                  Command="{Binding ResetFiltersCommand}" />
+          <Button Canvas.Left="1345"
+                  Canvas.Top="73"
+                  Width="142"
+                  Height="34"
+                  Style="{StaticResource UserCenterButtonStyle}"
+                  BorderBrush="#2772B0"
+                  Content="导出记录"
+                  Command="{Binding ExportRecordsCommand}" />
+
+          <Border Canvas.Left="21"
+                  Canvas.Top="131"
+                  Width="1468"
+                  Height="44"
+                   Background="#123A58"
+                   CornerRadius="2">
+            <Grid>
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="238" />
+                <ColumnDefinition Width="176" />
+                <ColumnDefinition Width="656" />
+                <ColumnDefinition Width="*" />
+              </Grid.ColumnDefinitions>
+              <TextBlock Grid.Column="0" Margin="20,0,0,0" Text="时间" Foreground="#CFE2FF"
+                         FontSize="15" FontWeight="Bold" VerticalAlignment="Center" />
+              <TextBlock Grid.Column="1" Margin="20,0,0,0" Text="操作类型" Foreground="#CFE2FF"
+                         FontSize="15" FontWeight="Bold" VerticalAlignment="Center" />
+              <TextBlock Grid.Column="2" Margin="20,0,0,0" Text="操作内容" Foreground="#CFE2FF"
+                         FontSize="15" FontWeight="Bold" VerticalAlignment="Center" />
+              <TextBlock Grid.Column="3" Margin="20,0,0,0" Text="操作人" Foreground="#CFE2FF"
+                         FontSize="15" FontWeight="Bold" VerticalAlignment="Center" />
+            </Grid>
+          </Border>
+
+          <ScrollViewer Canvas.Left="21"
+                        Canvas.Top="175"
+                        Width="1468"
+                        Height="304"
+                        HorizontalScrollBarVisibility="Disabled"
+                        VerticalScrollBarVisibility="Hidden"
+                        CanContentScroll="True">
+            <ItemsControl Width="1468"
+                          ItemsSource="{Binding VisibleAuditRecords}">
+              <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                  <StackPanel />
+                </ItemsPanelTemplate>
+              </ItemsControl.ItemsPanel>
+              <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                  <Button Width="1468"
+                          Height="38"
+                          Padding="0"
+                          Background="Transparent"
+                          BorderThickness="0"
+                          Cursor="Hand"
+                          FocusVisualStyle="{x:Null}"
+                          Command="{Binding DataContext.OpenAuditDetailCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                          CommandParameter="{Binding}">
+                    <Button.Template>
+                      <ControlTemplate TargetType="Button">
+                        <ContentPresenter />
+                      </ControlTemplate>
+                    </Button.Template>
+                    <Border Width="1468"
+                            Height="38"
+                            Background="{Binding RowBackground}">
+                      <Grid>
+                        <Grid.ColumnDefinitions>
+                          <ColumnDefinition Width="238" />
+                          <ColumnDefinition Width="176" />
+                          <ColumnDefinition Width="656" />
+                          <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Margin="20,0,0,0"
+                                   Text="{Binding TimestampDisplay}" Foreground="{Binding TimestampForeground}"
+                                   FontSize="14" VerticalAlignment="Center" />
+                        <Border Grid.Column="1" Width="{Binding TypeTagWidth}" Height="24"
+                                Margin="20,0,0,0" HorizontalAlignment="Left" VerticalAlignment="Center"
+                                Background="{Binding TypeBackground}" CornerRadius="4">
+                          <TextBlock Text="{Binding OperationType}" Foreground="#E8F3FF" FontSize="13"
+                                     FontWeight="Bold" TextAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <TextBlock Grid.Column="2" Margin="20,0,0,0"
+                                   Text="{Binding Content}" Foreground="{Binding PrimaryForeground}"
+                                   FontSize="14" FontWeight="{Binding ContentFontWeight}"
+                                   TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
+                        <TextBlock Grid.Column="3" Margin="20,0,0,0"
+                                   Text="{Binding OperatorName}" Foreground="{Binding OperatorForeground}"
+                                   FontSize="14" VerticalAlignment="Center" />
+                      </Grid>
+                    </Border>
+                  </Button>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+          </ScrollViewer>
+          <TextBlock Canvas.Left="21"
+                     Canvas.Top="288"
+                     Width="1468"
+                     Height="32"
+                     Text="{Binding AuditLoadStatusText}"
+                     Foreground="#8EA9C4"
+                     FontSize="14"
+                     TextAlignment="Center"
+                     IsHitTestVisible="False" />
+
+          <Border Canvas.Left="21"
+                  Canvas.Top="497"
+                  Width="1468"
+                  Height="1"
+                  Background="#164B70" />
+          <Grid Canvas.Left="41" Canvas.Top="505" Width="1446" Height="38">
+            <TextBlock Text="{Binding TotalRecordText}" Foreground="#8EA9C4"
+                       FontSize="14" VerticalAlignment="Center" />
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,10,0">
+              <Button Style="{StaticResource UnifiedPagerButtonStyle}" Content="‹"
+                      Command="{Binding PreviousPageCommand}"
+                      IsEnabled="{Binding CanGoToPreviousAuditPage}" />
+              <TextBlock Text="{Binding PageStatusText}" Width="64" Margin="8,0"
+                         Foreground="#DCEAF5" FontSize="14" TextAlignment="Center" VerticalAlignment="Center" />
+              <Button Style="{StaticResource UnifiedPagerButtonStyle}" Content="›"
+                      Command="{Binding NextPageCommand}"
+                      IsEnabled="{Binding CanGoToNextAuditPage}" />
+              <TextBlock Text="每页" Margin="20,0,8,0" Foreground="#8EA9C4"
+                         FontSize="13" VerticalAlignment="Center" />
+              <ComboBox Width="78" Height="34" Style="{StaticResource UserCenterComboBoxStyle}"
+                        FontSize="13" ItemsSource="{Binding PageSizeOptions}" DisplayMemberPath="Value"
+                        SelectedItem="{Binding SelectedPageSize, Mode=TwoWay}" />
+              <TextBlock Text="条" Margin="8,0,0,0" Foreground="#8EA9C4"
+                         FontSize="13" VerticalAlignment="Center" />
+            </StackPanel>
+          </Grid>
+        </Canvas>
+      </Border>
+
+      <Border Panel.ZIndex="20"
+              Canvas.Left="0"
+              Canvas.Top="0"
+              Width="1576"
+              Height="842"
+              Background="#B8051422">
+        <Border.Style>
+          <Style TargetType="Border">
+            <Setter Property="Visibility" Value="Collapsed" />
+            <Style.Triggers>
+              <DataTrigger Binding="{Binding IsAuditDetailOpen}" Value="True">
+                <Setter Property="Visibility" Value="Visible" />
+              </DataTrigger>
+            </Style.Triggers>
+          </Style>
+        </Border.Style>
+        <Canvas>
+          <Border Canvas.Left="408"
+                  Canvas.Top="151"
+                  Width="760"
+                  Height="540"
+                  Background="#0B1F34"
+                  BorderBrush="#2772B0"
+                  BorderThickness="1"
+                  CornerRadius="4">
+            <Grid Margin="24">
+              <Grid.RowDefinitions>
+                <RowDefinition Height="52" />
+                <RowDefinition Height="94" />
+                <RowDefinition Height="1" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="48" />
+              </Grid.RowDefinitions>
+
+              <Grid Grid.Row="0">
+                <TextBlock Text="操作详情"
+                           Foreground="#E8F3FF"
+                           FontSize="23"
+                           FontWeight="Bold"
+                           VerticalAlignment="Top" />
+                <Button Width="36"
+                        Height="32"
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Top"
+                        Style="{StaticResource UserCenterButtonStyle}"
+                        Content="×"
+                        FontSize="20"
+                        Command="{Binding CloseAuditDetailCommand}" />
+              </Grid>
+
+              <Grid Grid.Row="1">
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="110" />
+                  <ColumnDefinition Width="250" />
+                  <ColumnDefinition Width="100" />
+                  <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                  <RowDefinition Height="30" />
+                  <RowDefinition Height="30" />
+                  <RowDefinition Height="30" />
+                </Grid.RowDefinitions>
+                <TextBlock Text="操作内容" Foreground="#8EA9C4" FontSize="13" VerticalAlignment="Center" />
+                <TextBlock Grid.Column="1" Grid.ColumnSpan="3" Text="{Binding SelectedAuditRecord.Content}" Foreground="#E8F3FF" FontSize="14" FontWeight="Bold" VerticalAlignment="Center" />
+                <TextBlock Grid.Row="1" Text="操作时间" Foreground="#8EA9C4" FontSize="13" VerticalAlignment="Center" />
+                <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding SelectedAuditRecord.TimestampDisplay}" Foreground="#D8E8F7" FontSize="14" VerticalAlignment="Center" />
+                <TextBlock Grid.Row="1" Grid.Column="2" Text="操作人" Foreground="#8EA9C4" FontSize="13" VerticalAlignment="Center" />
+                <TextBlock Grid.Row="1" Grid.Column="3" Text="{Binding SelectedAuditRecord.OperatorDetail}" Foreground="#D8E8F7" FontSize="14" VerticalAlignment="Center" />
+                <TextBlock Grid.Row="2" Text="操作对象" Foreground="#8EA9C4" FontSize="13" VerticalAlignment="Center" />
+                <TextBlock Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="3" Text="{Binding SelectedAuditRecord.TargetName}" Foreground="#D8E8F7" FontSize="14" VerticalAlignment="Center" />
+              </Grid>
+
+              <Border Grid.Row="2" Background="#164B70" />
+
+              <ScrollViewer Grid.Row="3" Margin="0,16,0,10" VerticalScrollBarVisibility="Auto">
+                <StackPanel>
+                  <StackPanel Visibility="{Binding SelectedAuditRecord.HasBusinessSummary, Converter={StaticResource BoolToVisibilityConverter}}">
+                    <TextBlock Text="{Binding SelectedAuditRecord.BusinessSummaryTitle}"
+                               Foreground="#CFE2FF"
+                               FontSize="15"
+                               FontWeight="Bold"
+                               Margin="0,0,0,10" />
+                    <ItemsControl ItemsSource="{Binding SelectedAuditRecord.BusinessSummaryItems}">
+                      <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                          <Border MinHeight="38"
+                                  Margin="0,0,0,6"
+                                  Padding="12,8"
+                                  Background="#0D2942"
+                                  BorderBrush="#164B70"
+                                  BorderThickness="1"
+                                  CornerRadius="3">
+                            <TextBlock Text="{Binding}"
+                                       Foreground="#D8E8F7"
+                                       FontSize="13"
+                                       TextWrapping="Wrap" />
+                          </Border>
+                        </DataTemplate>
+                      </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                  </StackPanel>
+
+                  <StackPanel Visibility="{Binding SelectedAuditRecord.HasManagementChanges, Converter={StaticResource BoolToVisibilityConverter}}">
+                  <TextBlock Text="字段变化"
+                             Foreground="#CFE2FF"
+                             FontSize="15"
+                             FontWeight="Bold"
+                             Margin="0,0,0,10" />
+                  <Border Background="#123A58" Height="34" CornerRadius="2">
+                    <Grid>
+                      <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="170" />
+                        <ColumnDefinition Width="230" />
+                        <ColumnDefinition Width="30" />
+                        <ColumnDefinition Width="*" />
+                      </Grid.ColumnDefinitions>
+                      <TextBlock Margin="12,0" Text="字段" Foreground="#CFE2FF" FontSize="13" FontWeight="Bold" VerticalAlignment="Center" />
+                      <TextBlock Grid.Column="1" Margin="12,0" Text="修改前" Foreground="#CFE2FF" FontSize="13" FontWeight="Bold" VerticalAlignment="Center" />
+                      <TextBlock Grid.Column="3" Margin="12,0" Text="修改后" Foreground="#CFE2FF" FontSize="13" FontWeight="Bold" VerticalAlignment="Center" />
+                    </Grid>
+                  </Border>
+                  <ItemsControl ItemsSource="{Binding SelectedAuditRecord.Changes}">
+                    <ItemsControl.ItemTemplate>
+                      <DataTemplate>
+                        <Border MinHeight="38" BorderBrush="#164B70" BorderThickness="0,0,0,1">
+                          <Grid>
+                            <Grid.ColumnDefinitions>
+                              <ColumnDefinition Width="170" />
+                              <ColumnDefinition Width="230" />
+                              <ColumnDefinition Width="30" />
+                              <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Margin="12,8" Text="{Binding DisplayName}" Foreground="#D8E8F7" FontSize="13" TextWrapping="Wrap" />
+                            <TextBlock Grid.Column="1" Margin="12,8" Text="{Binding OldValue}" Foreground="#8EA9C4" FontSize="13" TextWrapping="Wrap" />
+                            <TextBlock Grid.Column="2" Text="→" Foreground="#328EE8" FontSize="15" TextAlignment="Center" VerticalAlignment="Center" />
+                            <TextBlock Grid.Column="3" Margin="12,8" Text="{Binding NewValue}" Foreground="#20D98B" FontSize="13" TextWrapping="Wrap" />
+                          </Grid>
+                        </Border>
+                      </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                  </ItemsControl>
+                  </StackPanel>
+                  <ItemsControl Margin="0,14,0,0"
+                                ItemsSource="{Binding SelectedAuditRecord.ManagementRelatedChanges}"
+                                Visibility="{Binding SelectedAuditRecord.HasManagementRelatedChanges, Converter={StaticResource BoolToVisibilityConverter}}">
+                    <ItemsControl.ItemTemplate>
+                      <DataTemplate>
+                        <TextBlock Margin="0,3" Text="{Binding StringFormat=关联影响：{0}}" Foreground="#F5B942" FontSize="13" />
+                      </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                  </ItemsControl>
+                </StackPanel>
+              </ScrollViewer>
+
+              <Button Grid.Row="4"
+                      Width="96"
+                      Height="34"
+                      HorizontalAlignment="Right"
+                      VerticalAlignment="Bottom"
+                      Style="{StaticResource UserCenterButtonStyle}"
+                      BorderBrush="#2772B0"
+                      Content="关闭"
+                      Command="{Binding CloseAuditDetailCommand}" />
+            </Grid>
+          </Border>
+        </Canvas>
+      </Border>
+    </Canvas>
+  </Viewbox>
+</UserControl>
