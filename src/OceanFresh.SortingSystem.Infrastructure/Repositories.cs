@@ -289,11 +289,11 @@ public sealed class SqliteDatabaseInitializer(SqliteConnectionFactory connection
         await ExecuteAsync(connection, """
             INSERT INTO model_versions (
                 id, seafood_category_id, version, source_weight_path,
-                notes, status, created_at
+                notes, status, created_at, training_image_size
             ) VALUES
-            ($id1, $cat1, '花蛤-v1', 'models\venus_clam\v1\best.pt', '初始稳定版', 0, $dt1),
-            ($id2, $cat1, '花蛤-v2', 'models\venus_clam\v2\best.pt', '增强空心和砂石识别', 0, $dt2),
-            ($id3, $cat2, '油蛤-v1', 'models\oil_clam\v1\best.pt', '油蛤标准模型', 0, $dt3);
+            ($id1, $cat1, '花蛤-v1', 'models\venus_clam\v1\best.pt', '初始稳定版', 0, $dt1, NULL),
+            ($id2, $cat1, '花蛤-v2', 'models\venus_clam\v2\best.pt', '增强空心和砂石识别', 0, $dt2, NULL),
+            ($id3, $cat2, '油蛤-v1', 'models\oil_clam\v1\best.pt', '油蛤标准模型', 0, $dt3, 640);
             """,
             [
                 ("$id1", SeedData.VenusModelV1Id.ToString()),

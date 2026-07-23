@@ -86,10 +86,18 @@ if ($ModelSourcePath) {
     $modelOutput = Join-Path $packageRoot "Models"
     New-Item -ItemType Directory -Path $modelOutput -Force | Out-Null
     Copy-Item -LiteralPath $resolvedModelPath -Destination $modelOutput -Recurse -Force
+
+    # A clean installation enables channel 1 and resolves this path relative
+    # to the standalone YOLO service working directory.
+    $seedModelOutput = Join-Path $yoloOutput "models\oil_clam\v1"
+    New-Item -ItemType Directory -Path $seedModelOutput -Force | Out-Null
+    Copy-Item -LiteralPath $resolvedModelPath -Destination (Join-Path $seedModelOutput "best.pt") -Force
 }
 
 Copy-Item -LiteralPath (Join-Path $workspaceRoot "docs\techik-hardware-integration.md") -Destination $docsOutput -Force
 Copy-Item -LiteralPath (Join-Path $workspaceRoot "docs\techik-detector-abi-recovery.md") -Destination $docsOutput -Force
+Copy-Item -LiteralPath (Join-Path $workspaceRoot "docs\offline-field-deployment.md") -Destination $docsOutput -Force
+Copy-Item -LiteralPath (Join-Path $workspaceRoot "scripts\Test-OfflineDeployment.ps1") -Destination $packageRoot -Force
 
 $bridgeProject = Join-Path $workspaceRoot "external\techik-detector-bridge\TechikDetectorBridge.vcxproj"
 $msbuildCandidates = @(@(
@@ -151,8 +159,13 @@ set "OCEANFRESH_TECHIK_ENABLE_DETECTOR=true"
 set "OCEANFRESH_TECHIK_ENABLE_PERIPHERALS=true"
 set "OCEANFRESH_TECHIK_DETECTOR_BRIDGE=%~dp0HardwareBridge\TechikDetectorBridge.exe"
 set "OCEANFRESH_TECHIK_DETECTOR_SDK_ROOT=%~dp0DetectorSdk"
-set "OCEANFRESH_TECHIK_FRAME_DIRECTORY=%LOCALAPPDATA%\OceanFreshSortingSystem\techik-frames"
+set "OCEANFRESH_DATA_ROOT=%~dp0Data"
+set "OCEANFRESH_TECHIK_FRAME_DIRECTORY=%~dp0Data\techik-frames"
 set "OCEANFRESH_TECHIK_ENABLE_OUTPUT=false"
+set "OCEANFRESH_YOLO_PYTHON=%~dp0PythonRuntime\python.exe"
+set "OCEANFRESH_PYTHON_EXE=%~dp0PythonRuntime\python.exe"
+set "YOLO_CONFIG_DIR=%~dp0Data\ultralytics"
+set "PYTHONUTF8=1"
 "@
 $fieldConfig | Set-Content -LiteralPath (Join-Path $packageRoot "field-config.cmd") -Encoding ASCII
 
@@ -163,6 +176,14 @@ call "%~dp0field-config.cmd"
 start "" "%~dp0OceanFresh.SortingSystem.HMI.exe"
 "@
 $launcher | Set-Content -LiteralPath (Join-Path $packageRoot "start-oceanfresh.cmd") -Encoding ASCII
+
+$checker = @"
+@echo off
+cd /d "%~dp0"
+powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0Test-OfflineDeployment.ps1" -DeploymentRoot "%~dp0"
+pause
+"@
+$checker | Set-Content -LiteralPath (Join-Path $packageRoot "check-environment.cmd") -Encoding ASCII
 
 $manifest = [ordered]@{
     generatedAt = (Get-Date).ToString("o")

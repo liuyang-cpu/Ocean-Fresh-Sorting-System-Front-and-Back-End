@@ -21,7 +21,11 @@ import torch
 
 
 SERVICE_DIR = Path(__file__).resolve().parent
-YOLO_PACKAGE_DIR = SERVICE_DIR.parent
+YOLO_PACKAGE_DIR = (
+    SERVICE_DIR
+    if (SERVICE_DIR / "predict_youge.py").exists()
+    else SERVICE_DIR.parent
+)
 PREDICT_SCRIPT_PATH = YOLO_PACKAGE_DIR / "predict_youge.py"  # Legacy filename; module is product-neutral.
 TEMPLATE_CONFIG_PATH = YOLO_PACKAGE_DIR / "predict_youge.json"  # Legacy path kept for deployed bundles.
 SERVICE_RUNTIME_ROOT = YOLO_PACKAGE_DIR / "service_runtime"
