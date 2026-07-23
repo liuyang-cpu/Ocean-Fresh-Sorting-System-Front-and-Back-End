@@ -10,7 +10,10 @@ param(
     [string]$PythonRuntimePath,
 
     [Parameter(Mandatory = $false)]
-    [string]$ModelSourcePath
+    [string]$ModelSourcePath,
+
+    [Parameter(Mandatory = $false)]
+    [string]$DetectorSdkSourcePath = "F:\tk_driver_dt_demo 23-6-19"
 )
 
 $ErrorActionPreference = "Stop"
@@ -25,6 +28,9 @@ $apiProject = Join-Path $workspaceRoot "src\OceanFresh.SortingSystem.LocalApi\Oc
 $apiOutput = Join-Path $packageRoot "LocalApi"
 $yoloOutput = Join-Path $packageRoot "YoloService"
 $docsOutput = Join-Path $packageRoot "Docs"
+$bridgeOutput = Join-Path $packageRoot "HardwareBridge"
+$detectorSdkOutput = Join-Path $packageRoot "DetectorSdk"
+$techikRuntimeOutput = Join-Path $packageRoot "TechikRuntime"
 
 if (Test-Path -LiteralPath $packageRoot) {
     $resolvedPackageRoot = [IO.Path]::GetFullPath($packageRoot)
@@ -36,7 +42,7 @@ if (Test-Path -LiteralPath $packageRoot) {
     Remove-Item -LiteralPath $resolvedPackageRoot -Recurse -Force
 }
 
-New-Item -ItemType Directory -Path $packageRoot, $apiOutput, $yoloOutput, $docsOutput -Force | Out-Null
+New-Item -ItemType Directory -Path $packageRoot, $apiOutput, $yoloOutput, $docsOutput, $bridgeOutput -Force | Out-Null
 
 dotnet publish $hmiProject -c Release -r win-x64 --self-contained true -o $packageRoot
 if ($LASTEXITCODE -ne 0) {
@@ -85,15 +91,68 @@ if ($ModelSourcePath) {
 Copy-Item -LiteralPath (Join-Path $workspaceRoot "docs\techik-hardware-integration.md") -Destination $docsOutput -Force
 Copy-Item -LiteralPath (Join-Path $workspaceRoot "docs\techik-detector-abi-recovery.md") -Destination $docsOutput -Force
 
-$escapedTechikRoot = $TechikRoot.Replace("%", "%%")
+$bridgeProject = Join-Path $workspaceRoot "external\techik-detector-bridge\TechikDetectorBridge.vcxproj"
+$msbuildCandidates = @(@(
+    "D:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Current\Bin\MSBuild.exe",
+    "${env:ProgramFiles}\Microsoft Visual Studio\2022\Community\MSBuild\Current\Bin\MSBuild.exe",
+    "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2022\BuildTools\MSBuild\Current\Bin\MSBuild.exe"
+) | Where-Object { $_ -and (Test-Path -LiteralPath $_ -PathType Leaf) })
+if ($msbuildCandidates.Count -eq 0) {
+    throw "Visual Studio 2022 C++ build tools were not found; TechikDetectorBridge cannot be built."
+}
+
+$bridgeIntermediate = Join-Path $workspaceRoot "artifacts\techik-bridge-package\obj"
+& $msbuildCandidates[0] $bridgeProject /p:Configuration=Release /p:Platform=x64 "/p:OutDir=$bridgeOutput/" "/p:IntDir=$bridgeIntermediate/"
+if ($LASTEXITCODE -ne 0) {
+    throw "TechikDetectorBridge build failed."
+}
+
+if (!(Test-Path -LiteralPath $DetectorSdkSourcePath -PathType Container)) {
+    throw "Detector SDK source was not found: $DetectorSdkSourcePath"
+}
+
+Copy-Item -LiteralPath $DetectorSdkSourcePath -Destination $detectorSdkOutput -Recurse -Force
+if (!(Test-Path -LiteralPath (Join-Path $detectorSdkOutput "tk_driver_dt.dll") -PathType Leaf)) {
+    throw "Detector SDK package does not contain tk_driver_dt.dll."
+}
+
+$capturedRuntimeItems = @(
+    "cfg",
+    "product",
+    "plugin\tk_driver_dt.dll",
+    "plugin\tk_driver_xray.dll",
+    "plugin\tk_driver_motion.dll",
+    "plugin\tk_driver_io.dll",
+    "plugin\tk_driver_rejector.dll",
+    "Qt5Core.dll",
+    "Qt5SerialPort.dll",
+    "MSVCP140.dll",
+    "VCRUNTIME140.dll",
+    "modbus_x64.dll",
+    "license.dat"
+)
+foreach ($relativePath in $capturedRuntimeItems) {
+    $source = Join-Path $TechikRoot $relativePath
+    if (!(Test-Path -LiteralPath $source)) {
+        continue
+    }
+
+    $destination = Join-Path $techikRuntimeOutput $relativePath
+    $destinationParent = Split-Path -Parent $destination
+    New-Item -ItemType Directory -Path $destinationParent -Force | Out-Null
+    Copy-Item -LiteralPath $source -Destination $destination -Recurse -Force
+}
+
 $fieldConfig = @"
 @echo off
-set "OCEANFRESH_HARDWARE_ADAPTER=techik-bridge"
-set "OCEANFRESH_TECHIK_ROOT=$escapedTechikRoot"
+set "OCEANFRESH_HARDWARE_ADAPTER=techik-direct"
+set "OCEANFRESH_TECHIK_ROOT=%~dp0TechikRuntime"
+set "OCEANFRESH_TECHIK_ENABLE_DETECTOR=true"
+set "OCEANFRESH_TECHIK_ENABLE_PERIPHERALS=true"
+set "OCEANFRESH_TECHIK_DETECTOR_BRIDGE=%~dp0HardwareBridge\TechikDetectorBridge.exe"
+set "OCEANFRESH_TECHIK_DETECTOR_SDK_ROOT=%~dp0DetectorSdk"
+set "OCEANFRESH_TECHIK_FRAME_DIRECTORY=%LOCALAPPDATA%\OceanFreshSortingSystem\techik-frames"
 set "OCEANFRESH_TECHIK_ENABLE_OUTPUT=false"
-set "OCEANFRESH_TECHIK_DIRECT_PROTOCOL_CONFIRMED=false"
-set "OCEANFRESH_TECHIK_DIRECT_PORT_MAP_CONFIRMED=false"
-set "OCEANFRESH_TECHIK_MODBUS_SLAVE_ID=0"
 "@
 $fieldConfig | Set-Content -LiteralPath (Join-Path $packageRoot "field-config.cmd") -Encoding ASCII
 
@@ -109,13 +168,15 @@ $manifest = [ordered]@{
     generatedAt = (Get-Date).ToString("o")
     runtimeIdentifier = "win-x64"
     selfContainedDotNet = $true
-    hardwareMode = "techik-bridge"
+    hardwareMode = "techik-direct"
+    detectorDirectEnabled = $true
     physicalOutputEnabled = $false
-    techikRoot = $TechikRoot
+    techikRoot = "TechikRuntime"
+    capturedTechikSource = $TechikRoot
     includesPythonRuntime = [bool]$PythonRuntimePath
     includesModel = [bool]$ModelSourcePath
 }
 $manifest | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $packageRoot "field-package.json") -Encoding UTF8
 
 Write-Host "Field package created at: $packageRoot"
-Write-Host "Physical hardware output remains disabled."
+Write-Host "Captured detector and peripheral plugins are enabled. Physical X-ray, conveyor and reject outputs remain safety-locked."

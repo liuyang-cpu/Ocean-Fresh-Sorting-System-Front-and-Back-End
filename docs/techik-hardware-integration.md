@@ -14,7 +14,7 @@
 - 历史图像配置为 `D:/History/img`，原配置只保存 NG 图像；
 - 独立 I/O Demo 目录名表明串口参数可能为 `38400-8N2`。
 
-探测器 Demo 没有正式头文件或导入库。当前已通过静态分析恢复主要回调结构体尺寸和字段偏移，并通过 MSVC x64 离线编译检查；但尚未用现场正式版插件和真实探测器验证，因此当前版本仍不直接调用 `TDI_registerCallback`。错误的 ABI 或版本组合可能导致进程崩溃或图像数据损坏。
+`tk_txr_system.pdb` 和 `TxrUi.pdb` 保留了完整 C++ 类型信息。当前已经恢复探测器、X 光源、IO 和传送带包装类的方法签名及结构体字段。探测器 demo 的 2023 ABI 已封装为 64 位 `TechikDetectorBridge.exe`；离线检查确认必需导出全部存在，但仍需在现场验证 demo DLL 与真实 type 0 探测器兼容。
 
 ## 两种工作模式
 
@@ -33,28 +33,45 @@ $env:OCEANFRESH_TECHIK_ROOT = "C:\Techik"
 
 ### Direct 模式
 
-Ocean Fresh 停止依赖 Techik 主程序，使用其 `modbus_x64.dll` 直接访问 Modbus RTU 剔除控制器。
+Ocean Fresh 可直接启动原生桥接，不运行 `Techik.exe`。桥接完成以下工作：
+
+- 通过 demo `tk_driver_dt.dll` 初始化 type 0 探测器，接收 16 位原始回调并聚合为 1536×300 图像；
+- 加载原 Techik 的 `tk_driver_xray.dll`、`tk_driver_io.dll`、`tk_driver_motion.dll`；
+- 使用原插件内部协议连接 X 光源 COM5、I/O COM3/COM1 和传送带 COM1；
+- 从 `sys_config.ini` 构造原插件所需设备参数，从当前产品配置读取生产设定值；
+- 通过独立进程隔离厂商 C++ ABI，插件异常不会直接破坏 .NET 进程。
 
 ```powershell
 $env:OCEANFRESH_HARDWARE_ADAPTER = "techik-direct"
-$env:OCEANFRESH_TECHIK_ROOT = "C:\Techik"
-$env:OCEANFRESH_TECHIK_MODBUS_PORT = "COM3"
-$env:OCEANFRESH_TECHIK_MODBUS_BAUD = "38400"
-$env:OCEANFRESH_TECHIK_MODBUS_PARITY = "N"
-$env:OCEANFRESH_TECHIK_MODBUS_DATA_BITS = "8"
-$env:OCEANFRESH_TECHIK_MODBUS_STOP_BITS = "2"
-$env:OCEANFRESH_TECHIK_MODBUS_SLAVE_ID = "<现场确认的正整数站号>"
+$env:OCEANFRESH_TECHIK_ENABLE_DETECTOR = "true"
+$env:OCEANFRESH_TECHIK_ENABLE_PERIPHERALS = "true"
+$env:OCEANFRESH_TECHIK_DETECTOR_BRIDGE = "C:\OceanFresh\HardwareBridge\TechikDetectorBridge.exe"
+$env:OCEANFRESH_TECHIK_DETECTOR_SDK_ROOT = "C:\OceanFresh\DetectorSdk"
+$env:OCEANFRESH_TECHIK_ROOT = "C:\OceanFresh\TechikRuntime"
 ```
 
-Direct 模式默认仍然锁死物理输出。只有在现场确认 Modbus 站号、串口参数，以及 `REJECT_BULK_AIR.unit_N_port` 确实可直接作为 libmodbus coil 地址后，才能同时设置：
+带回配置当前读到：
+
+- X 光范围 30–60 kV、500–8000 μA，当前产品设定 50 kV、5333 μA；
+- 传送带范围 5–120，当前产品 008 的最近备份设定为速度 90、方向 true；
+- 剔除端口 1000–1071、共 72 路。
+
+这些数值是从带回文件恢复的，不等于已在真实机器验证。Direct 模式默认仍锁死所有物理动作。首次现场只能先验证插件加载、设备连接和状态读取；完成断料、安全隔离、急停测试以及喷嘴映射核对后，才可设置：
 
 ```powershell
 $env:OCEANFRESH_TECHIK_ENABLE_OUTPUT = "true"
-$env:OCEANFRESH_TECHIK_DIRECT_PROTOCOL_CONFIRMED = "true"
-$env:OCEANFRESH_TECHIK_DIRECT_PORT_MAP_CONFIRMED = "true"
 ```
 
-禁止在没有断料、安全隔离和现场人员确认的情况下设置这两个开关。
+光源、传送带和剔除输出都受该总开关保护。也可以用以下变量临时覆盖产品设定：
+
+```powershell
+$env:OCEANFRESH_TECHIK_XRAY_KV = "50"
+$env:OCEANFRESH_TECHIK_XRAY_UA = "5333"
+$env:OCEANFRESH_TECHIK_CONVEYOR_SPEED = "90"
+$env:OCEANFRESH_TECHIK_CONVEYOR_DIRECTION = "true"
+```
+
+桥接只接受本次带回的固定插件版本，启动前会核对三个插件的 SHA-256。插件版本不一致时会拒绝以已恢复的固定 ABI 加载，避免调用错误虚函数地址。
 
 ## 支持的覆盖配置
 
@@ -63,26 +80,26 @@ $env:OCEANFRESH_TECHIK_DIRECT_PORT_MAP_CONFIRMED = "true"
 | `OCEANFRESH_HARDWARE_ADAPTER` | `techik-bridge`、`techik-direct` 或未启用 | 未启用 |
 | `OCEANFRESH_TECHIK_ROOT` | Techik 完整运行目录 | `C:\Techik` |
 | `OCEANFRESH_TECHIK_CAPTURE_DIRECTORY` | 覆盖 Techik 图像目录 | 从 `misc_config.ini` 读取 |
-| `OCEANFRESH_TECHIK_MODBUS_DLL` | 覆盖 `modbus_x64.dll` 路径 | Techik 根目录 |
-| `OCEANFRESH_TECHIK_MODBUS_PORT` | I/O 串口 | 从活动配置读取，缺省 `COM3` |
-| `OCEANFRESH_TECHIK_MODBUS_BAUD` | 波特率 | `38400` |
-| `OCEANFRESH_TECHIK_MODBUS_PARITY` | 校验位 | `N` |
-| `OCEANFRESH_TECHIK_MODBUS_DATA_BITS` | 数据位 | `8` |
-| `OCEANFRESH_TECHIK_MODBUS_STOP_BITS` | 停止位 | `2` |
-| `OCEANFRESH_TECHIK_MODBUS_SLAVE_ID` | Modbus 从站号 | `0`（未确认，不允许输出） |
-| `OCEANFRESH_TECHIK_ENABLE_OUTPUT` | 允许物理剔除输出 | `false` |
-| `OCEANFRESH_TECHIK_DIRECT_PROTOCOL_CONFIRMED` | 确认 COM3 设备确实使用所配置的 Modbus RTU 协议 | `false` |
-| `OCEANFRESH_TECHIK_DIRECT_PORT_MAP_CONFIRMED` | 确认 Techik 端口号就是 coil 地址 | `false` |
+| `OCEANFRESH_TECHIK_ENABLE_DETECTOR` | 启动直接探测器采集 | `false` |
+| `OCEANFRESH_TECHIK_ENABLE_PERIPHERALS` | 加载原 X 光、IO、传送带插件并连接设备 | `false` |
+| `OCEANFRESH_TECHIK_DETECTOR_BRIDGE` | 原生 64 位桥接程序 | 安装目录 `HardwareBridge` |
+| `OCEANFRESH_TECHIK_DETECTOR_SDK_ROOT` | demo 探测器 SDK 目录 | Techik 根目录下 `detector-sdk` |
+| `OCEANFRESH_TECHIK_FRAME_DIRECTORY` | 直接采集帧目录 | `%LOCALAPPDATA%\OceanFreshSortingSystem\techik-frames` |
+| `OCEANFRESH_TECHIK_ENABLE_OUTPUT` | 允许光源、传送带和物理剔除动作 | `false` |
+| `OCEANFRESH_TECHIK_XRAY_KV` | 覆盖产品 X 光电压 | 从产品配置读取 |
+| `OCEANFRESH_TECHIK_XRAY_UA` | 覆盖产品 X 光电流 | 从产品配置读取 |
+| `OCEANFRESH_TECHIK_CONVEYOR_SPEED` | 覆盖产品传送带速度 | 从产品配置读取 |
+| `OCEANFRESH_TECHIK_CONVEYOR_DIRECTION` | 覆盖产品传送带方向 | 从产品配置读取 |
 
 ## 仍需现场验证
 
-1. 探测器具体型号，以及 `st_dt_info`、`st_dt_data_frame`、回调函数的正式 C/C++ 定义；
-2. Techik 全量原始图像是否可以持续落盘，目录层级与文件格式；
-3. I/O 模块真实 COM 口、Modbus 从站号和 `38400-8N2` 参数；
-4. `unit_0_port=1000` 到 `unit_71_port=1071` 是直接 coil 地址还是 Techik 内部逻辑端口；
-5. 喷嘴方向、编号和图像横坐标映射；
-6. X 光源 type 6 的串口帧协议；
-7. 传送带 type 4 的启停、速度反馈和编码器协议；
-8. 探测器到剔除位置的真实机械距离与时延标定。
+1. type 0 探测器的具体品牌/型号，以及 2023 demo DLL 与现场硬件的实际兼容性；
+2. 直接回调能否持续获得 1536×50 子帧，以及扫描方向和灰度是否正确；
+3. 原插件是否能在现场成功连接 X 光源、两个 IO 对象和传送带；
+4. 恢复的 50 kV、5333 μA、速度 90、方向 true 是否就是该机器当前正确生产参数；
+5. `unit_0_port=1000` 到 `unit_71_port=1071` 经原 IO 插件调用后是否对应正确物理喷嘴；
+6. 喷嘴顺序、方向、保持时间和图像横坐标映射；
+7. 探测器到剔除位置的真实机械距离、传送带速度单位与时延标定；
+8. 急停、门禁、X 光状态与故障反馈是否满足现场安全联锁。
 
-在以上项目验证前，系统会把未确认的关键硬件标记为故障并阻止生产运行；剔除下发异常也会转为关键告警和故障停机状态。
+在以上项目验证前，部署包中的 `OCEANFRESH_TECHIK_ENABLE_OUTPUT=false` 必须保持不变。此状态允许检查文件、插件和设备连接，但会阻止开 X 光、启动传送带和剔除动作。

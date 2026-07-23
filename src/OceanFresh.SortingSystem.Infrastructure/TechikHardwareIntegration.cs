@@ -24,6 +24,66 @@ public sealed record TechikIoModuleProfile(
     int Type,
     int ComPort);
 
+public sealed record TechikXrayStartupProfile(
+    int Id,
+    int Type,
+    int ComPort,
+    int MaxVoltageKv,
+    int MinVoltageKv,
+    int MaxCurrentUa,
+    int MinCurrentUa,
+    int MaxPowerLimit,
+    int MinPowerLimit,
+    int OpenWaitStableTimeMilliseconds,
+    int CloseWaitStableTimeMilliseconds);
+
+public sealed record TechikMotionStartupProfile(
+    int Id,
+    int Type,
+    int ComPort,
+    double SpeedMax,
+    double SpeedMin,
+    double SpeedRatio,
+    bool DirectionReverse,
+    int PlcId,
+    int PlcRunPortForward,
+    int PlcRunPortReverse,
+    int PlcMonitorPortRun,
+    int PlcAnalogId);
+
+public sealed record TechikProductionSetpoints(
+    double XrayVoltageKv,
+    double XrayCurrentUa,
+    double ConveyorSpeed,
+    bool ConveyorDirection);
+
+public sealed record TechikDetectorStartupProfile(
+    int Id,
+    int Type,
+    int NetworkId,
+    int SubCardPixels,
+    int LinePixels,
+    int Channels,
+    double PitchSize,
+    int SubFrameHeight,
+    int BoundXrayId,
+    bool ScanDirection,
+    bool EnableDarkDynamicTracking,
+    int DarkDynamicPixelStart,
+    int DarkDynamicPixelLast,
+    int CcdBinningMode,
+    int CcdDualShiftPixels,
+    int IasTdiLevel,
+    int IasTdiLevelOffset,
+    int IasKvThresholdLow,
+    int IasKvThresholdHigh,
+    int IasSoftBinningMode,
+    int CalibrationType,
+    int CalibrationDarkLines,
+    int CalibrationFullLines,
+    int CalibrationDarkTarget,
+    int CalibrationFullTarget);
+
 public sealed record TechikInstallationProfile(
     string RootDirectory,
     string MainExecutablePath,
@@ -66,6 +126,19 @@ public sealed record TechikInstallationProfile(
         File.Exists(Path.Combine(RootDirectory, "plugin", "tk_driver_motion.dll"));
 
     public string NativeModbusLibraryPath => Path.Combine(RootDirectory, "modbus_x64.dll");
+
+    public TechikDetectorStartupProfile DetectorStartup { get; init; } = new(
+        0, 0, 0, 128, 1536, 1, 0.4, 50, 0, true, false, 0, 0, 0, 0,
+        56, 4, 5, 25, 0, 0, 250, 1000, 0, 52428);
+
+    public TechikXrayStartupProfile XrayStartup { get; init; } = new(
+        0, 6, 5, 60, 30, 8000, 500, 350000, 6000, 8000, 5000);
+
+    public TechikMotionStartupProfile MotionStartup { get; init; } = new(
+        0, 4, 1, 120, 5, 23, false, 0, 9, 8, 7, 0);
+
+    public TechikProductionSetpoints ProductionSetpoints { get; init; } =
+        new(50, 5333, 15, false);
 }
 
 public sealed record TechikIntegrationOptions(
@@ -95,6 +168,15 @@ public sealed record TechikIntegrationOptions(
     private const string ModbusDataBitsEnvVar = "OCEANFRESH_TECHIK_MODBUS_DATA_BITS";
     private const string ModbusStopBitsEnvVar = "OCEANFRESH_TECHIK_MODBUS_STOP_BITS";
     private const string ModbusSlaveIdEnvVar = "OCEANFRESH_TECHIK_MODBUS_SLAVE_ID";
+    private const string DetectorSdkRootEnvVar = "OCEANFRESH_TECHIK_DETECTOR_SDK_ROOT";
+    private const string DetectorBridgeExecutableEnvVar = "OCEANFRESH_TECHIK_DETECTOR_BRIDGE";
+    private const string DetectorFrameDirectoryEnvVar = "OCEANFRESH_TECHIK_FRAME_DIRECTORY";
+    private const string DetectorEnabledEnvVar = "OCEANFRESH_TECHIK_ENABLE_DETECTOR";
+    private const string PeripheralsEnabledEnvVar = "OCEANFRESH_TECHIK_ENABLE_PERIPHERALS";
+    private const string XrayVoltageEnvVar = "OCEANFRESH_TECHIK_XRAY_KV";
+    private const string XrayCurrentEnvVar = "OCEANFRESH_TECHIK_XRAY_UA";
+    private const string ConveyorSpeedEnvVar = "OCEANFRESH_TECHIK_CONVEYOR_SPEED";
+    private const string ConveyorDirectionEnvVar = "OCEANFRESH_TECHIK_CONVEYOR_DIRECTION";
 
     public static TechikIntegrationOptions LoadFromEnvironment()
     {
@@ -116,7 +198,7 @@ public sealed record TechikIntegrationOptions(
         var parityText = ReadString(ModbusParityEnvVar, "N");
         var libraryOverride = Environment.GetEnvironmentVariable(ModbusLibraryEnvVar);
 
-        return new TechikIntegrationOptions(
+        var options = new TechikIntegrationOptions(
             mode,
             profile,
             ReadBoolean(OutputEnabledEnvVar),
@@ -131,11 +213,43 @@ public sealed record TechikIntegrationOptions(
             string.IsNullOrWhiteSpace(libraryOverride)
                 ? profile.NativeModbusLibraryPath
                 : Path.GetFullPath(libraryOverride));
+        return options with
+        {
+            DetectorSdkRoot = ReadPath(
+                DetectorSdkRootEnvVar,
+                Path.Combine(profile.RootDirectory, "detector-sdk")),
+            DetectorBridgeExecutablePath = ReadPath(
+                DetectorBridgeExecutableEnvVar,
+                Path.Combine(AppContext.BaseDirectory, "HardwareBridge", "TechikDetectorBridge.exe")),
+            DetectorFrameDirectory = ReadPath(
+                DetectorFrameDirectoryEnvVar,
+                Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                    "OceanFreshSortingSystem",
+                    "techik-frames")),
+            EnableDetector = ReadBoolean(DetectorEnabledEnvVar),
+            EnablePeripherals = ReadBoolean(PeripheralsEnabledEnvVar),
+            ProductionSetpoints = new TechikProductionSetpoints(
+                ReadDouble(
+                    XrayVoltageEnvVar,
+                    profile.ProductionSetpoints.XrayVoltageKv),
+                ReadDouble(
+                    XrayCurrentEnvVar,
+                    profile.ProductionSetpoints.XrayCurrentUa),
+                ReadDouble(
+                    ConveyorSpeedEnvVar,
+                    profile.ProductionSetpoints.ConveyorSpeed),
+                ReadBoolean(
+                    ConveyorDirectionEnvVar,
+                    profile.ProductionSetpoints.ConveyorDirection))
+        };
     }
 
     public void ApplyCaptureDirectoryToProcess()
     {
-        if (Mode == TechikIntegrationMode.Disabled || string.IsNullOrWhiteSpace(Profile.CaptureDirectory))
+        if (Mode == TechikIntegrationMode.Disabled ||
+            (Mode == TechikIntegrationMode.Bridge && string.IsNullOrWhiteSpace(Profile.CaptureDirectory)) ||
+            (Mode == TechikIntegrationMode.Direct && string.IsNullOrWhiteSpace(DetectorFrameDirectory)))
         {
             return;
         }
@@ -144,10 +258,25 @@ public sealed record TechikIntegrationOptions(
         {
             Environment.SetEnvironmentVariable(
                 "OCEANFRESH_PLC_XRAY_INPUT_DIRECTORY",
-                Profile.CaptureDirectory,
+                Mode == TechikIntegrationMode.Direct
+                    ? DetectorFrameDirectory
+                    : Profile.CaptureDirectory,
                 EnvironmentVariableTarget.Process);
         }
     }
+
+    public string DetectorSdkRoot { get; init; } = string.Empty;
+
+    public string DetectorBridgeExecutablePath { get; init; } = string.Empty;
+
+    public string DetectorFrameDirectory { get; init; } = string.Empty;
+
+    public bool EnableDetector { get; init; }
+
+    public bool EnablePeripherals { get; init; }
+
+    public TechikProductionSetpoints ProductionSetpoints { get; init; } =
+        new(50, 5333, 15, false);
 
     private static TechikIntegrationMode ParseMode(string? raw) => raw?.Trim().ToLowerInvariant() switch
     {
@@ -160,6 +289,12 @@ public sealed record TechikIntegrationOptions(
     {
         var value = Environment.GetEnvironmentVariable(variableName);
         return string.IsNullOrWhiteSpace(value) ? fallback : value.Trim();
+    }
+
+    private static string ReadPath(string variableName, string fallback)
+    {
+        var value = Environment.GetEnvironmentVariable(variableName);
+        return Path.GetFullPath(string.IsNullOrWhiteSpace(value) ? fallback : value.Trim());
     }
 
     private static int ReadPositiveInt(string variableName, int fallback)
@@ -184,6 +319,27 @@ public sealed record TechikIntegrationOptions(
         return string.Equals(value, "1", StringComparison.OrdinalIgnoreCase) ||
                string.Equals(value, "true", StringComparison.OrdinalIgnoreCase) ||
                string.Equals(value, "yes", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool ReadBoolean(string variableName, bool fallback)
+    {
+        var value = Environment.GetEnvironmentVariable(variableName);
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return fallback;
+        }
+
+        return string.Equals(value, "1", StringComparison.OrdinalIgnoreCase) ||
+               string.Equals(value, "true", StringComparison.OrdinalIgnoreCase) ||
+               string.Equals(value, "yes", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static double ReadDouble(string variableName, double fallback)
+    {
+        var value = Environment.GetEnvironmentVariable(variableName);
+        return double.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out var parsed)
+            ? parsed
+            : fallback;
     }
 }
 
@@ -228,7 +384,7 @@ public static class TechikInstallationProfileReader
                 system.GetInt(section, "com_port", 0)));
         }
 
-        return new TechikInstallationProfile(
+        var profile = new TechikInstallationProfile(
             root,
             Path.Combine(root, "Techik.exe"),
             profileName,
@@ -251,19 +407,199 @@ public static class TechikInstallationProfileReader
             system.GetInt("MOTION_0", "type", -1),
             system.GetBoolean("REJECT_BULK_AIR", "dir", true),
             ioModules);
+        return profile with
+        {
+            XrayStartup = new TechikXrayStartupProfile(
+                system.GetInt("XRAY_TUBE_0", "id", 0),
+                system.GetInt("XRAY_TUBE_0", "type", 6),
+                system.GetInt("XRAY_TUBE_0", "com_port", 5),
+                system.GetInt("XRAY_TUBE_0", "max_voltage_kv", 60),
+                system.GetInt("XRAY_TUBE_0", "min_voltage_kv", 30),
+                system.GetInt("XRAY_TUBE_0", "max_current_ua", 8000),
+                system.GetInt("XRAY_TUBE_0", "min_current_ua", 500),
+                system.GetInt("XRAY_TUBE_0", "max_power_limit", 350000),
+                system.GetInt("XRAY_TUBE_0", "min_power_limit", 6000),
+                system.GetInt("XRAY_TUBE_0", "open_wait_stable_time_ms", 8000),
+                system.GetInt("XRAY_TUBE_0", "close_wait_stable_time_ms", 5000)),
+            MotionStartup = new TechikMotionStartupProfile(
+                system.GetInt("MOTION_0", "id", 0),
+                system.GetInt("MOTION_0", "type", 4),
+                system.GetInt("MOTION_0", "com_port", 1),
+                system.GetDouble("MOTION_0", "speed_max", 120),
+                system.GetDouble("MOTION_0", "speed_min", 5),
+                system.GetDouble("MOTION_0", "speed_ratio", 23),
+                system.GetBoolean("MOTION_0", "dir_reverse", false),
+                system.GetInt("MOTION_0", "plc_id", 0),
+                system.GetInt("MOTION_0", "plc_run_port_fwd", 9),
+                system.GetInt("MOTION_0", "plc_run_port_rev", 8),
+                system.GetInt("MOTION_0", "plc_mon_port_run", 7),
+                system.GetInt("MOTION_0", "plc_analog_id", 0)),
+            ProductionSetpoints = TechikProductSetpointReader.Load(
+                root,
+                new TechikProductionSetpoints(50, 5333, 15, false)),
+            DetectorStartup = new TechikDetectorStartupProfile(
+                system.GetInt("DETECTOR_0", "id", 0),
+                system.GetInt("DETECTOR_0", "type", 0),
+                system.GetInt("DETECTOR_0", "tk_net_id", 0),
+                system.GetInt("DETECTOR_0", "sub_card_pixel", 128),
+                system.GetInt("DETECTOR_0", "line_pixels", 1536),
+                system.GetInt("DETECTOR_0", "channels", 1),
+                system.GetDouble("DETECTOR_0", "pitch_size", 0.4),
+                system.GetInt("DETECTOR_0", "sub_frame_height", 50),
+                system.GetInt("DETECTOR_0", "bind_xray_id", 0),
+                system.GetBoolean("DETECTOR_0", "tk_scan_dir_mode", true),
+                system.GetBoolean("DETECTOR_0", "tk_enable_dark_dy_track", false),
+                system.GetInt("DETECTOR_0", "tk_dark_dy_track_pixel_start", 0),
+                system.GetInt("DETECTOR_0", "tk_dark_dy_track_pixel_last", 0),
+                system.GetInt("DETECTOR_0", "ccd_binning_mode", 0),
+                system.GetInt("DETECTOR_0", "ccd_dual_shift_pixels", 0),
+                system.GetInt("DETECTOR_0", "ias_tdi_level", 56),
+                system.GetInt("DETECTOR_0", "ias_tdi_level_offset", 4),
+                system.GetInt("DETECTOR_0", "ias_kv_th_low", 5),
+                system.GetInt("DETECTOR_0", "ias_kv_th_high", 25),
+                system.GetInt("DETECTOR_0", "ias_soft_binning_mode", 0),
+                system.GetInt("DETECTOR_0", "calibra_type", 0),
+                system.GetInt("DETECTOR_0", "dycalibra_dark_lines", 250),
+                system.GetInt("DETECTOR_0", "dycalibra_full_lines", 1000),
+                system.GetInt("DETECTOR_0", "dycalibra_dark_target", 0),
+                system.GetInt("DETECTOR_0", "dycalibra_full_target", 52428))
+        };
     }
 }
 
-public sealed class TechikHardwareProtocolClient(TechikIntegrationOptions options) : IHardwareProtocolClient
+internal static class TechikProductSetpointReader
 {
-    public Task<IReadOnlyList<HardwareSignalStatus>> ReadSignalsAsync(CancellationToken cancellationToken)
+    public static TechikProductionSetpoints Load(
+        string root,
+        TechikProductionSetpoints fallback)
+    {
+        try
+        {
+            var productRoot = Path.Combine(root, "product");
+            var productIndex = IniDocument.Load(Path.Combine(productRoot, "config.ini"));
+            var productId = productIndex.GetInt("PRODUCT", "id", 0);
+            if (productId <= 0)
+            {
+                return fallback;
+            }
+
+            var activePath = Path.Combine(productRoot, productId.ToString("000"), "prod_param.ini");
+            if (!File.Exists(activePath))
+            {
+                activePath = Directory
+                    .EnumerateFiles(
+                        Path.Combine(productRoot, "Delete"),
+                        $"ID {productId:000}_*_prod_param.ini",
+                        SearchOption.TopDirectoryOnly)
+                    .OrderByDescending(Path.GetFileName, StringComparer.OrdinalIgnoreCase)
+                    .FirstOrDefault() ?? string.Empty;
+            }
+            if (!File.Exists(activePath))
+            {
+                return fallback;
+            }
+
+            var product = IniDocument.Load(activePath);
+            var xray = DecodeQtByteArray(product.Get("PROD_PARAM_XRAY", "xray_0", string.Empty));
+            var motion = DecodeQtByteArray(product.Get("PROD_PARAM_MOTION", "motion_0", string.Empty));
+            if (xray.Length < 8 || motion.Length < 16)
+            {
+                return fallback;
+            }
+
+            return new TechikProductionSetpoints(
+                BitConverter.ToInt32(xray, 0),
+                BitConverter.ToInt32(xray, 4),
+                BitConverter.ToDouble(motion, 8),
+                motion[0] != 0);
+        }
+        catch
+        {
+            return fallback;
+        }
+    }
+
+    private static byte[] DecodeQtByteArray(string value)
+    {
+        const string prefix = "@ByteArray(";
+        if (!value.StartsWith(prefix, StringComparison.Ordinal) || !value.EndsWith(')'))
+        {
+            return [];
+        }
+
+        var content = value.AsSpan(prefix.Length, value.Length - prefix.Length - 1);
+        var bytes = new List<byte>(content.Length);
+        for (var index = 0; index < content.Length; index++)
+        {
+            var current = content[index];
+            if (current != '\\')
+            {
+                bytes.Add((byte)current);
+                continue;
+            }
+
+            if (++index >= content.Length)
+            {
+                break;
+            }
+
+            var escaped = content[index];
+            if (escaped == '0')
+            {
+                bytes.Add(0);
+                continue;
+            }
+            if (escaped == 'x' && index + 1 < content.Length)
+            {
+                var hexStart = index + 1;
+                var hexLength = 0;
+                while (hexLength < 2 &&
+                       hexStart + hexLength < content.Length &&
+                       Uri.IsHexDigit(content[hexStart + hexLength]))
+                {
+                    hexLength++;
+                }
+                if (hexLength > 0)
+                {
+                    bytes.Add(Convert.ToByte(
+                        content.Slice(hexStart, hexLength).ToString(),
+                        16));
+                    index += hexLength;
+                    continue;
+                }
+            }
+
+            bytes.Add((byte)escaped);
+        }
+
+        return bytes.ToArray();
+    }
+}
+
+public sealed class TechikHardwareProtocolClient(
+    TechikIntegrationOptions options,
+    TechikDetectorBridgeProcess detectorBridge) : IHardwareProtocolClient
+{
+    public async Task<IReadOnlyList<HardwareSignalStatus>> ReadSignalsAsync(CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
+        if (options.Mode == TechikIntegrationMode.Direct)
+        {
+            try
+            {
+                await detectorBridge.EnsureStartedAsync(cancellationToken);
+                await detectorBridge.RefreshStatusAsync(cancellationToken);
+            }
+            catch
+            {
+            }
+        }
+
         var now = DateTimeOffset.UtcNow;
 
         if (options.Mode == TechikIntegrationMode.Disabled)
         {
-            return Task.FromResult<IReadOnlyList<HardwareSignalStatus>>([]);
+            return [];
         }
 
         var profile = options.Profile;
@@ -272,63 +608,80 @@ public sealed class TechikHardwareProtocolClient(TechikIntegrationOptions option
         var serialPorts = ReadSerialPorts();
         var ioPortPresent = serialPorts.Contains(options.ModbusSerialPort);
 
-        var detectorReady = options.Mode == TechikIntegrationMode.Bridge &&
-                            techikRunning &&
-                            profile.HasDetectorRuntime &&
-                            profile.DetectorCount > 0 &&
-                            !string.IsNullOrWhiteSpace(profile.CaptureDirectory) &&
-                            Directory.Exists(profile.CaptureDirectory);
+        var detectorReady = options.Mode switch
+        {
+            TechikIntegrationMode.Bridge =>
+                techikRunning &&
+                profile.HasDetectorRuntime &&
+                profile.DetectorCount > 0 &&
+                !string.IsNullOrWhiteSpace(profile.CaptureDirectory) &&
+                Directory.Exists(profile.CaptureDirectory),
+            TechikIntegrationMode.Direct =>
+                detectorBridge.IsRunning,
+            _ => false
+        };
 
+        var peripheral = detectorBridge.PeripheralSnapshot;
         var controllerReady = options.Mode switch
         {
             TechikIntegrationMode.Bridge => bridgeReady,
-            TechikIntegrationMode.Direct => profile.HasIoRuntime && ioPortPresent,
+            TechikIntegrationMode.Direct =>
+                detectorBridge.PeripheralsConnected &&
+                peripheral.PrimaryIoOnline &&
+                peripheral.SecondaryIoOnline,
             _ => false
         };
 
         var ejectorReady = options.Mode switch
         {
             TechikIntegrationMode.Bridge => bridgeReady,
-            TechikIntegrationMode.Direct => profile.HasRejectorRuntime &&
-                                            File.Exists(options.NativeModbusLibraryPath) &&
-                                            ioPortPresent &&
-                                            options.EnableHardwareOutput &&
-                                            options.DirectProtocolConfirmed &&
-                                            options.DirectPortMapConfirmed &&
-                                            options.ModbusSlaveId > 0,
+            TechikIntegrationMode.Direct =>
+                detectorBridge.PeripheralsConnected &&
+                peripheral.PrimaryIoOnline &&
+                options.EnableHardwareOutput,
             _ => false
         };
 
         var xrayReady = options.Mode == TechikIntegrationMode.Bridge
             ? bridgeReady
-            : false;
+            : detectorBridge.PeripheralsConnected &&
+              peripheral.XrayOnline &&
+              peripheral.XrayFaultCode == 0;
         var conveyorReady = options.Mode == TechikIntegrationMode.Bridge
             ? bridgeReady
-            : false;
+            : detectorBridge.PeripheralsConnected && peripheral.MotionOnline;
 
         IReadOnlyList<HardwareSignalStatus> result =
         [
             BuildStatus("TECHIK-DETECTOR-0", DeviceType.XrayDetector, detectorReady,
                 detectorReady
-                    ? $"Techik 探测器桥接目录就绪，{profile.DetectorLinePixels} px × {profile.DetectorSubFrameHeight} 行。"
-                    : "Techik 探测器 DLL、配置或图像桥接目录未就绪。", now),
+                    ? options.Mode == TechikIntegrationMode.Direct
+                        ? $"Ocean Fresh 已直接接管 Techik 探测器，输出 {profile.DetectorLinePixels} px 原始线阵图像。"
+                        : $"Techik 探测器桥接目录就绪，{profile.DetectorLinePixels} px × {profile.DetectorSubFrameHeight} 行。"
+                    : options.Mode == TechikIntegrationMode.Direct
+                        ? $"Techik 探测器桥接未运行：{detectorBridge.LastMessage}"
+                        : "Techik 探测器 DLL、配置或图像桥接目录未就绪。", now),
             BuildStatus("TECHIK-XRAY-0", DeviceType.XraySource, xrayReady,
-                xrayReady ? $"Techik 进程正在托管 X 光源（配置 COM{profile.XrayComPort}）。" : "尚未验证 X 光源活动通信；直接控制协议仍需现场确认。", now),
+                xrayReady
+                    ? $"Ocean Fresh 已通过原厂 type={profile.XrayType} 插件接管 COM{profile.XrayComPort} X 光源。"
+                    : $"X 光源未在线或故障码非零：{detectorBridge.LastMessage}", now),
             BuildStatus("TECHIK-CONVEYOR-0", DeviceType.Conveyor, conveyorReady,
-                conveyorReady ? $"Techik 进程正在托管传送带（配置 COM{profile.ConveyorComPort}）。" : "尚未验证传送带活动通信；直接控制协议仍需现场确认。", now),
+                conveyorReady
+                    ? $"Ocean Fresh 已通过原厂 type={profile.ConveyorType} 插件接管传送带/PLC。"
+                    : $"传送带/PLC 未在线：{detectorBridge.LastMessage}", now),
             BuildStatus("TECHIK-EJECTOR-0", DeviceType.Ejector, ejectorReady,
                 ejectorReady
                     ? $"Techik 剔除链路就绪，配置 {profile.RejectOutputs.Count} 路输出。"
-                    : "剔除输出保持安全锁定；需确认 Modbus 站号和端口映射后显式启用。", now),
+                    : "剔除链路未就绪或仍处于物理输出安全锁定。", now),
             BuildStatus("TECHIK-CONTROLLER-0", DeviceType.Controller, controllerReady,
                 controllerReady
                     ? options.Mode == TechikIntegrationMode.Bridge
                         ? "Techik 进程正在托管硬件控制。"
-                        : $"已发现 {options.ModbusSerialPort} 和 Techik I/O 运行库。"
+                        : "Techik type=3/type=7 IO 插件均已在线。"
                     : "Techik 控制进程或配置的串口未就绪。", now)
         ];
 
-        return Task.FromResult(result);
+        return result;
     }
 
     private static HardwareSignalStatus BuildStatus(
@@ -403,10 +756,10 @@ public sealed class TechikHardwareProtocolClient(TechikIntegrationOptions option
     }
 }
 
-public sealed class TechikEjectorController(TechikIntegrationOptions options) : IEjectorController
+public sealed class TechikEjectorController(
+    TechikIntegrationOptions options,
+    TechikDetectorBridgeProcess bridge) : IEjectorController
 {
-    private readonly SemaphoreSlim _commandGate = new(1, 1);
-
     public async Task ExecuteAsync(EjectCommand command, CancellationToken cancellationToken)
     {
         if (command.Action == DefectHandlingAction.Pass)
@@ -420,13 +773,10 @@ public sealed class TechikEjectorController(TechikIntegrationOptions options) : 
                 "Techik bridge mode only reads images and health state; it cannot send Ocean Fresh eject commands.");
         }
 
-        if (!options.EnableHardwareOutput ||
-            !options.DirectProtocolConfirmed ||
-            !options.DirectPortMapConfirmed ||
-            options.ModbusSlaveId <= 0)
+        if (!options.EnableHardwareOutput || !options.EnablePeripherals)
         {
             throw new InvalidOperationException(
-                "Techik hardware output is safety-locked. Confirm the protocol, Modbus station and direct port mapping before enabling output.");
+                "Techik hardware output is safety-locked. Enable the captured peripheral runtime after field verification.");
         }
 
         if (!options.Profile.RejectOutputs.TryGetValue(command.NozzleNumber, out var output) ||
@@ -436,32 +786,48 @@ public sealed class TechikEjectorController(TechikIntegrationOptions options) : 
             throw new InvalidOperationException($"No enabled Techik reject output is mapped to nozzle {command.NozzleNumber}.");
         }
 
-        await _commandGate.WaitAsync(cancellationToken);
-        try
+        if (command.TriggerDelayMicroseconds > 0)
         {
-            if (command.TriggerDelayMicroseconds > 0)
-            {
-                await Task.Delay(TimeSpan.FromTicks(command.TriggerDelayMicroseconds * 10L), cancellationToken);
-            }
+            await Task.Delay(
+                TimeSpan.FromTicks(command.TriggerDelayMicroseconds * 10L),
+                cancellationToken);
+        }
 
-            using var session = new NativeModbusRtuSession(options);
-            session.Connect();
-            var activeValue = output.IsActiveHigh ? 1 : 0;
-            var inactiveValue = output.IsActiveHigh ? 0 : 1;
-            session.WriteBit(output.Port, activeValue);
-            try
-            {
-                await Task.Delay(TimeSpan.FromTicks(Math.Max(1, command.PulseWidthMicroseconds) * 10L), cancellationToken);
-            }
-            finally
-            {
-                session.WriteBit(output.Port, inactiveValue);
-            }
-        }
-        finally
-        {
-            _commandGate.Release();
-        }
+        await bridge.PulseRejectAsync(
+            output.Port,
+            output.IsActiveHigh,
+            Math.Max(1, command.PulseWidthMicroseconds),
+            cancellationToken);
+    }
+}
+
+public sealed class TechikProductionHardwareController(
+    TechikIntegrationOptions options,
+    TechikDetectorBridgeProcess bridge) : IProductionHardwareController
+{
+    public Task StartAsync(CancellationToken cancellationToken) =>
+        options.Mode == TechikIntegrationMode.Direct
+            ? bridge.StartMachineAsync(cancellationToken)
+            : Task.CompletedTask;
+
+    public Task StopAsync(CancellationToken cancellationToken) =>
+        options.Mode == TechikIntegrationMode.Direct
+            ? bridge.StopMachineAsync(cancellationToken)
+            : Task.CompletedTask;
+}
+
+public sealed class SimulatedProductionHardwareController : IProductionHardwareController
+{
+    public Task StartAsync(CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        return Task.CompletedTask;
+    }
+
+    public Task StopAsync(CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        return Task.CompletedTask;
     }
 }
 
@@ -667,6 +1033,11 @@ internal sealed class IniDocument
 
     public decimal GetDecimal(string section, string key, decimal fallback) =>
         decimal.TryParse(Get(section, key, string.Empty), NumberStyles.Number, CultureInfo.InvariantCulture, out var value)
+            ? value
+            : fallback;
+
+    public double GetDouble(string section, string key, double fallback) =>
+        double.TryParse(Get(section, key, string.Empty), NumberStyles.Float, CultureInfo.InvariantCulture, out var value)
             ? value
             : fallback;
 

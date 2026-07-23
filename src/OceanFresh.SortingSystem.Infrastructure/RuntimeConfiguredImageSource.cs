@@ -6,7 +6,8 @@ namespace OceanFresh.SortingSystem.Infrastructure;
 
 public sealed class RuntimeConfiguredImageSource(
     IRuntimeDataSourceStore dataSourceStore,
-    IRuntimeStateStore runtimeStateStore) : IImageSource
+    IRuntimeStateStore runtimeStateStore,
+    TechikDetectorBridgeProcess? detectorBridge = null) : IImageSource
 {
     private const string PollIntervalEnvVar = "OCEANFRESH_PLC_XRAY_POLL_MS";
     private const string StableMillisecondsEnvVar = "OCEANFRESH_PLC_XRAY_STABLE_MS";
@@ -21,7 +22,8 @@ public sealed class RuntimeConfiguredImageSource(
         ".jpeg",
         ".bmp",
         ".tif",
-        ".tiff"
+        ".tiff",
+        ".ofxraw"
     };
 
     public async IAsyncEnumerable<InferenceRequest> CaptureAsync([EnumeratorCancellation] CancellationToken cancellationToken)
@@ -64,6 +66,20 @@ public sealed class RuntimeConfiguredImageSource(
 
                 await Task.Delay(200, cancellationToken);
                 continue;
+            }
+
+            if (detectorBridge is not null && !detectorBridge.IsRunning)
+            {
+                try
+                {
+                    await detectorBridge.EnsureStartedAsync(cancellationToken);
+                }
+                catch (Exception exception) when (exception is not OperationCanceledException)
+                {
+                    dataSourceStore.UpdateProgress(0, $"Techik 探测器启动失败: {exception.Message}");
+                    await Task.Delay(1_000, cancellationToken);
+                    continue;
+                }
             }
 
             var cameraDirectory = PlcXrayImageSource.ResolveInputDirectory();
@@ -216,7 +232,10 @@ public sealed class RuntimeConfiguredImageSource(
     {
         try
         {
-            return await File.ReadAllBytesAsync(path, cancellationToken);
+            var bytes = await File.ReadAllBytesAsync(path, cancellationToken);
+            return string.Equals(Path.GetExtension(path), ".ofxraw", StringComparison.OrdinalIgnoreCase)
+                ? await TechikRawFrameCodec.EncodePngAsync(bytes, cancellationToken)
+                : bytes;
         }
         catch (IOException)
         {

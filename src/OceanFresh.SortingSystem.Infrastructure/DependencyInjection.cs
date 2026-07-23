@@ -10,6 +10,7 @@ public static class DependencyInjection
         var techikOptions = TechikIntegrationOptions.LoadFromEnvironment();
         techikOptions.ApplyCaptureDirectoryToProcess();
         services.AddSingleton(techikOptions);
+        services.AddSingleton<TechikDetectorBridgeProcess>();
 
         services.AddSingleton<SqliteConnectionFactory>();
         services.AddSingleton<SqliteDatabaseInitializer>();
@@ -31,11 +32,13 @@ public static class DependencyInjection
         {
             services.AddSingleton<IHardwareProtocolClient, SimulatedHardwareProtocolClient>();
             services.AddSingleton<IEjectorController, SimulatedEjectorController>();
+            services.AddSingleton<IProductionHardwareController, SimulatedProductionHardwareController>();
         }
         else
         {
             services.AddSingleton<IHardwareProtocolClient, TechikHardwareProtocolClient>();
             services.AddSingleton<IEjectorController, TechikEjectorController>();
+            services.AddSingleton<IProductionHardwareController, TechikProductionHardwareController>();
         }
 
         services.AddSingleton<IDeviceHealthProvider, SimulatedDeviceHealthProvider>();

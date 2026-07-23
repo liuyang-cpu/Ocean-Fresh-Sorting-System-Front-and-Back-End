@@ -11,6 +11,7 @@ node_modules/
 *.user
 *.userosscache
 *.sln.docstates
+*.obj
 
 # Test and local artifacts
 artifacts/

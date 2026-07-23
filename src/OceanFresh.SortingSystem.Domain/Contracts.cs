@@ -172,6 +172,12 @@ public interface IEjectorController
     Task ExecuteAsync(EjectCommand command, CancellationToken cancellationToken);
 }
 
+public interface IProductionHardwareController
+{
+    Task StartAsync(CancellationToken cancellationToken);
+    Task StopAsync(CancellationToken cancellationToken);
+}
+
 public interface IDeviceHealthProvider
 {
     Task<IReadOnlyList<DeviceStatus>> GetStatusesAsync(CancellationToken cancellationToken);

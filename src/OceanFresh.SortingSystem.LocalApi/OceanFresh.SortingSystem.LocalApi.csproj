@@ -6,7 +6,8 @@
     <ProjectReference Include="..\OceanFresh.SortingSystem.Runtime\OceanFresh.SortingSystem.Runtime.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="..\..\predict\**\*">
+    <Content Include="..\..\predict\**\*"
+             Exclude="..\..\predict\**\__pycache__\**;..\..\predict\**\service_runtime\**">
       <Link>predict\%(RecursiveDir)%(Filename)%(Extension)</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

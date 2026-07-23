@@ -1559,7 +1559,8 @@ public sealed class RuntimeCoordinator(
     IChannelConfigRepository channelRepository,
     IModelRegistryRepository modelRepository,
     IDetectionSessionRepository detectionSessionRepository,
-    IHardwareInterlockService hardwareInterlockService) : IRuntimeCoordinator
+    IHardwareInterlockService hardwareInterlockService,
+    IProductionHardwareController? productionHardwareController = null) : IRuntimeCoordinator
 {
     public async Task StartAsync(CancellationToken cancellationToken)
     {
@@ -1585,6 +1586,10 @@ public sealed class RuntimeCoordinator(
                     throw new InvalidOperationException(interlock.Summary);
                 }
 
+                if (productionHardwareController is not null)
+                {
+                    await productionHardwareController.StartAsync(cancellationToken);
+                }
                 runtimeStateStore.Update(new RuntimeSnapshot(
                     RuntimeMode.Running,
                     DeviceState.Running,
@@ -1609,6 +1614,16 @@ public sealed class RuntimeCoordinator(
         {
             if (changedMachineState)
             {
+                try
+                {
+                    if (productionHardwareController is not null)
+                    {
+                        await productionHardwareController.StopAsync(CancellationToken.None);
+                    }
+                }
+                catch
+                {
+                }
                 var latest = runtimeStateStore.GetSnapshot();
                 if (latest.RuntimeMode != RuntimeMode.Faulted)
                 {
@@ -1623,6 +1638,10 @@ public sealed class RuntimeCoordinator(
     public async Task StopAsync(CancellationToken cancellationToken)
     {
         await StopDetectionAsync(cancellationToken);
+        if (productionHardwareController is not null)
+        {
+            await productionHardwareController.StopAsync(cancellationToken);
+        }
         var current = runtimeStateStore.GetSnapshot();
         runtimeStateStore.Update(current with
         {
