@@ -36,6 +36,8 @@ $env:OCEANFRESH_TECHIK_ROOT = "C:\Techik"
 Ocean Fresh 可直接启动原生桥接，不运行 `Techik.exe`。桥接完成以下工作：
 
 - 通过 demo `tk_driver_dt.dll` 初始化 type 0 探测器，接收 16 位原始回调并聚合为 1536×300 图像；
+- 通过 Windows 命名管道将聚合后的 16 位帧直接传给 .NET 有界内存队列，不在生产链路中落盘；
+- 内存队列只保留最新帧，推理短时落后时丢弃最旧帧，避免阻塞厂商回调和无限积压；
 - 加载原 Techik 的 `tk_driver_xray.dll`、`tk_driver_io.dll`、`tk_driver_motion.dll`；
 - 使用原插件内部协议连接 X 光源 COM5、I/O COM3/COM1 和传送带 COM1；
 - 从 `sys_config.ini` 构造原插件所需设备参数，从当前产品配置读取生产设定值；
@@ -84,7 +86,7 @@ $env:OCEANFRESH_TECHIK_CONVEYOR_DIRECTION = "true"
 | `OCEANFRESH_TECHIK_ENABLE_PERIPHERALS` | 加载原 X 光、IO、传送带插件并连接设备 | `false` |
 | `OCEANFRESH_TECHIK_DETECTOR_BRIDGE` | 原生 64 位桥接程序 | 安装目录 `HardwareBridge` |
 | `OCEANFRESH_TECHIK_DETECTOR_SDK_ROOT` | demo 探测器 SDK 目录 | Techik 根目录下 `detector-sdk` |
-| `OCEANFRESH_TECHIK_FRAME_DIRECTORY` | 直接采集帧目录 | `%LOCALAPPDATA%\OceanFreshSortingSystem\techik-frames` |
+| `OCEANFRESH_TECHIK_FRAME_DIRECTORY` | 旧版文件传输兼容目录；实时管道不可用时保留诊断能力 | `%LOCALAPPDATA%\OceanFreshSortingSystem\techik-frames` |
 | `OCEANFRESH_TECHIK_ENABLE_OUTPUT` | 允许光源、传送带和物理剔除动作 | `false` |
 | `OCEANFRESH_TECHIK_XRAY_KV` | 覆盖产品 X 光电压 | 从产品配置读取 |
 | `OCEANFRESH_TECHIK_XRAY_UA` | 覆盖产品 X 光电流 | 从产品配置读取 |

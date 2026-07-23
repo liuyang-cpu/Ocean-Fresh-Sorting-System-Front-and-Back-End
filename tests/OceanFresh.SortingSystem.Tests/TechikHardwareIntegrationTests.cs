@@ -185,6 +185,48 @@ public sealed class TechikHardwareIntegrationTests
     }
 
     [Fact]
+    public async Task RawFrameCodec_ReadsConsecutiveRealtimePipeFrames()
+    {
+        static byte[] BuildFrame(int detectorId, long sequence, long capturedMicroseconds)
+        {
+            var raw = new byte[40 + 4 * sizeof(ushort)];
+            raw[0] = (byte)'O';
+            raw[1] = (byte)'F';
+            raw[2] = (byte)'R';
+            raw[3] = (byte)'1';
+            BinaryPrimitives.WriteUInt32LittleEndian(raw.AsSpan(4, 4), 40);
+            BinaryPrimitives.WriteInt32LittleEndian(raw.AsSpan(8, 4), detectorId);
+            BinaryPrimitives.WriteInt32LittleEndian(raw.AsSpan(12, 4), 2);
+            BinaryPrimitives.WriteInt32LittleEndian(raw.AsSpan(16, 4), 2);
+            BinaryPrimitives.WriteInt32LittleEndian(raw.AsSpan(20, 4), 1);
+            BinaryPrimitives.WriteInt64LittleEndian(raw.AsSpan(24, 8), sequence);
+            BinaryPrimitives.WriteInt64LittleEndian(raw.AsSpan(32, 8), capturedMicroseconds);
+            BinaryPrimitives.WriteUInt16LittleEndian(raw.AsSpan(40, 2), 1);
+            BinaryPrimitives.WriteUInt16LittleEndian(raw.AsSpan(42, 2), 2);
+            BinaryPrimitives.WriteUInt16LittleEndian(raw.AsSpan(44, 2), 3);
+            BinaryPrimitives.WriteUInt16LittleEndian(raw.AsSpan(46, 2), 4);
+            return raw;
+        }
+
+        var firstRaw = BuildFrame(0, 41, 1_750_000_000_123_456);
+        var secondRaw = BuildFrame(1, 42, 1_750_000_000_223_789);
+        await using var stream = new MemoryStream(firstRaw.Concat(secondRaw).ToArray());
+
+        var first = await TechikRawFrameCodec.ReadFrameAsync(stream, CancellationToken.None);
+        var second = await TechikRawFrameCodec.ReadFrameAsync(stream, CancellationToken.None);
+
+        Assert.Equal(0, first.DetectorId);
+        Assert.Equal(41, first.Sequence);
+        Assert.Equal(2, first.Width);
+        Assert.Equal(2, first.Height);
+        Assert.Equal(firstRaw, first.RawFrame);
+        Assert.Equal(1, second.DetectorId);
+        Assert.Equal(42, second.Sequence);
+        Assert.Equal(789, second.CapturedAt.Ticks % TimeSpan.TicksPerMillisecond / 10);
+        Assert.Equal(secondRaw, second.RawFrame);
+    }
+
+    [Fact]
     public async Task EjectorController_RefusesOutputUntilSafetyFlagsAreConfirmed()
     {
         var profile = new TechikInstallationProfile(

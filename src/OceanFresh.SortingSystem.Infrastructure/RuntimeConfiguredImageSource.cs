@@ -82,6 +82,50 @@ public sealed class RuntimeConfiguredImageSource(
                 }
             }
 
+            if (detectorBridge?.IsDirectFrameStreamingEnabled == true)
+            {
+                cameraInitialized = false;
+                InferenceRequest? request = null;
+                try
+                {
+                    var frame = await detectorBridge.ReadFrameAsync(cancellationToken);
+                    if (frame is null)
+                    {
+                        continue;
+                    }
+
+                    var imageBytes = await TechikRawFrameCodec.EncodePngAsync(
+                        frame.RawFrame,
+                        cancellationToken);
+                    var frameName =
+                        $"detector-{frame.DetectorId}-{frame.Sequence:D12}-{frame.Width}x{frame.Height}.png";
+                    dataSourceStore.UpdateProgress(
+                        0,
+                        $"X 光探测器实时采集: {frame.Width}×{frame.Height}，序号 {frame.Sequence}");
+                    request = new InferenceRequest(
+                        Guid.Empty,
+                        Guid.Empty,
+                        $"xray-{frame.CapturedAt:yyyyMMddHHmmssfff}-{frame.Sequence:D12}",
+                        imageBytes,
+                        frame.CapturedAt,
+                        frameName,
+                        RuntimeDataSourceMode.XrayCamera,
+                        true);
+                }
+                catch (Exception exception) when (exception is not OperationCanceledException)
+                {
+                    dataSourceStore.UpdateProgress(
+                        0,
+                        $"Techik 实时图像接收失败: {exception.Message}");
+                    await Task.Delay(500, cancellationToken);
+                }
+                if (request is not null)
+                {
+                    yield return request;
+                }
+                continue;
+            }
+
             var cameraDirectory = PlcXrayImageSource.ResolveInputDirectory();
             Directory.CreateDirectory(cameraDirectory);
 

@@ -6,8 +6,10 @@
 #include <array>
 #include <atomic>
 #include <chrono>
+#include <condition_variable>
 #include <cstddef>
 #include <cstdint>
+#include <cstring>
 #include <deque>
 #include <filesystem>
 #include <fstream>
@@ -90,7 +92,9 @@ namespace
         std::filesystem::path sdkRoot;
         std::filesystem::path outputDirectory;
         std::filesystem::path runtimeRoot;
+        std::string framePipe;
         bool inspectOnly{true};
+        bool frameStreamSelfTest{};
         bool runPeripherals{};
         int aggregateHeight{300};
         DtInfo detector{
@@ -188,11 +192,62 @@ namespace
     class FrameWriter
     {
     public:
-        FrameWriter(std::filesystem::path outputDirectory, int aggregateHeight)
+        FrameWriter(
+            std::filesystem::path outputDirectory,
+            std::string framePipe,
+            int aggregateHeight)
             : outputDirectory_(std::move(outputDirectory)),
+              framePipe_(std::move(framePipe)),
               aggregateHeight_(aggregateHeight)
         {
-            std::filesystem::create_directories(outputDirectory_);
+            if (!framePipe_.empty())
+            {
+                const auto pipePath = std::string{"\\\\.\\pipe\\"} + framePipe_;
+                if (!WaitNamedPipeA(pipePath.c_str(), 10'000))
+                {
+                    throw std::runtime_error(
+                        "Timed out waiting for detector frame pipe: " +
+                        std::to_string(GetLastError()));
+                }
+
+                pipeHandle_ = CreateFileA(
+                    pipePath.c_str(),
+                    GENERIC_WRITE,
+                    0,
+                    nullptr,
+                    OPEN_EXISTING,
+                    FILE_ATTRIBUTE_NORMAL,
+                    nullptr);
+                if (pipeHandle_ == INVALID_HANDLE_VALUE)
+                {
+                    throw std::runtime_error(
+                        "Failed to connect detector frame pipe: " +
+                        std::to_string(GetLastError()));
+                }
+
+                pipeWriter_ = std::thread([this] { WritePipeFrames(); });
+            }
+            else
+            {
+                std::filesystem::create_directories(outputDirectory_);
+            }
+        }
+
+        ~FrameWriter()
+        {
+            {
+                std::lock_guard lock(pipeGate_);
+                pipeStopping_ = true;
+            }
+            pipeReady_.notify_all();
+            if (pipeWriter_.joinable())
+            {
+                pipeWriter_.join();
+            }
+            if (pipeHandle_ != INVALID_HANDLE_VALUE)
+            {
+                CloseHandle(pipeHandle_);
+            }
         }
 
         bool OnFrame(const DtDataFrame& frame)
@@ -223,13 +278,21 @@ namespace
                 return true;
             }
 
-            WriteFrame(
+            auto serialized = SerializeFrame(
                 frame.detectorId,
                 static_cast<std::int32_t>(rowWidth_),
                 aggregateHeight_,
                 pixels_.data(),
                 requiredSamples);
             pixels_.erase(pixels_.begin(), pixels_.begin() + requiredSamples);
+            if (pipeHandle_ != INVALID_HANDLE_VALUE)
+            {
+                EnqueuePipeFrame(std::move(serialized));
+            }
+            else
+            {
+                WriteFrameFile(serialized);
+            }
             return true;
         }
 
@@ -246,7 +309,7 @@ namespace
             std::int64_t capturedUnixMicroseconds{};
         };
 
-        void WriteFrame(
+        std::vector<std::byte> SerializeFrame(
             std::int32_t detectorId,
             std::int32_t width,
             std::int32_t height,
@@ -257,10 +320,6 @@ namespace
             const auto now = std::chrono::system_clock::now();
             const auto captured = std::chrono::duration_cast<std::chrono::microseconds>(
                 now.time_since_epoch()).count();
-            const auto stem = std::to_string(captured) + "-" + std::to_string(sequence);
-            const auto temporary = outputDirectory_ / (stem + ".tmp");
-            const auto final = outputDirectory_ / (stem + ".ofxraw");
-
             RawHeader header{
                 RawMagic,
                 sizeof(RawHeader),
@@ -271,14 +330,30 @@ namespace
                 sequence,
                 captured};
 
+            std::vector<std::byte> serialized(
+                sizeof(header) + sampleCount * sizeof(std::uint16_t));
+            std::memcpy(serialized.data(), &header, sizeof(header));
+            std::memcpy(
+                serialized.data() + sizeof(header),
+                pixels,
+                sampleCount * sizeof(std::uint16_t));
+            return serialized;
+        }
+
+        void WriteFrameFile(const std::vector<std::byte>& serialized)
+        {
+            RawHeader header{};
+            std::memcpy(&header, serialized.data(), sizeof(header));
+            const auto stem = std::to_string(header.capturedUnixMicroseconds) +
+                              "-" + std::to_string(header.sequence);
+            const auto temporary = outputDirectory_ / (stem + ".tmp");
+            const auto final = outputDirectory_ / (stem + ".ofxraw");
+
             {
                 std::ofstream stream(temporary, std::ios::binary | std::ios::trunc);
                 stream.write(
-                    reinterpret_cast<const char*>(&header),
-                    static_cast<std::streamsize>(sizeof(header)));
-                stream.write(
-                    reinterpret_cast<const char*>(pixels),
-                    static_cast<std::streamsize>(sampleCount * sizeof(std::uint16_t)));
+                    reinterpret_cast<const char*>(serialized.data()),
+                    static_cast<std::streamsize>(serialized.size()));
                 stream.flush();
                 if (!stream)
                 {
@@ -289,17 +364,96 @@ namespace
             std::filesystem::rename(temporary, final);
             std::cout << "{\"event\":\"frame\",\"file\":\""
                       << final.filename().string()
-                      << "\",\"width\":" << width
-                      << ",\"height\":" << height
-                      << ",\"sequence\":" << sequence << "}" << std::endl;
+                      << "\",\"width\":" << header.width
+                      << ",\"height\":" << header.height
+                      << ",\"sequence\":" << header.sequence << "}" << std::endl;
         }
 
+        void EnqueuePipeFrame(std::vector<std::byte> serialized)
+        {
+            std::lock_guard lock(pipeGate_);
+            if (pipeFailed_)
+            {
+                return;
+            }
+            if (pipeFrames_.size() >= MaxQueuedFrames)
+            {
+                pipeFrames_.pop_front();
+                ++droppedFrames_;
+            }
+            pipeFrames_.push_back(std::move(serialized));
+            pipeReady_.notify_one();
+        }
+
+        void WritePipeFrames()
+        {
+            while (true)
+            {
+                std::vector<std::byte> serialized;
+                {
+                    std::unique_lock lock(pipeGate_);
+                    pipeReady_.wait(lock, [this]
+                    {
+                        return pipeStopping_ || !pipeFrames_.empty();
+                    });
+                    if (pipeStopping_ && pipeFrames_.empty())
+                    {
+                        return;
+                    }
+                    serialized = std::move(pipeFrames_.front());
+                    pipeFrames_.pop_front();
+                }
+
+                std::size_t writtenTotal = 0;
+                while (writtenTotal < serialized.size())
+                {
+                    DWORD written{};
+                    const auto remaining = serialized.size() - writtenTotal;
+                    const auto chunk = static_cast<DWORD>(
+                        std::min<std::size_t>(remaining, 1024 * 1024));
+                    if (!WriteFile(
+                            pipeHandle_,
+                            serialized.data() + writtenTotal,
+                            chunk,
+                            &written,
+                            nullptr) ||
+                        written == 0)
+                    {
+                        std::lock_guard lock(pipeGate_);
+                        pipeFailed_ = true;
+                        pipeFrames_.clear();
+                        std::cerr << "{\"event\":\"frame_pipe_error\",\"code\":"
+                                  << GetLastError() << "}" << std::endl;
+                        return;
+                    }
+                    writtenTotal += written;
+                }
+
+                RawHeader header{};
+                std::memcpy(&header, serialized.data(), sizeof(header));
+                std::cout << "{\"event\":\"frame_streamed\",\"width\":"
+                          << header.width << ",\"height\":" << header.height
+                          << ",\"sequence\":" << header.sequence
+                          << ",\"dropped\":" << droppedFrames_ << "}" << std::endl;
+            }
+        }
+
+        static constexpr std::size_t MaxQueuedFrames = 4;
         std::filesystem::path outputDirectory_;
+        std::string framePipe_;
         int aggregateHeight_{};
         std::mutex gate_;
         std::vector<std::uint16_t> pixels_;
         std::size_t rowWidth_{};
         std::int64_t sequence_{};
+        HANDLE pipeHandle_{INVALID_HANDLE_VALUE};
+        std::mutex pipeGate_;
+        std::condition_variable pipeReady_;
+        std::deque<std::vector<std::byte>> pipeFrames_;
+        std::thread pipeWriter_;
+        bool pipeStopping_{};
+        bool pipeFailed_{};
+        std::uint64_t droppedFrames_{};
     };
 
     bool __cdecl HandleFrame(void* context, DtDataFrame frame)
@@ -360,7 +514,9 @@ namespace
             ReadArgument(argc, argv, "--output-directory"));
         options.runtimeRoot = std::filesystem::path(
             ReadArgument(argc, argv, "--runtime-root"));
+        options.framePipe = ReadArgument(argc, argv, "--frame-pipe");
         options.inspectOnly = !HasFlag(argc, argv, "--run-detector");
+        options.frameStreamSelfTest = HasFlag(argc, argv, "--frame-stream-self-test");
         options.runPeripherals = HasFlag(argc, argv, "--run-peripherals");
         options.aggregateHeight = ReadInt(argc, argv, "--aggregate-height", 300);
         options.detector.id = ReadInt(argc, argv, "--id", 0);
@@ -524,14 +680,35 @@ int main(int argc, char** argv)
         std::cout << "{\"event\":\"inspection\",\"abi\":\"techik-demo-2023-x64\","
                      "\"dt_info_size\":104,\"frame_size\":40,\"exports_ready\":true}"
                   << std::endl;
+        if (options.frameStreamSelfTest)
+        {
+            const std::array<std::uint16_t, 4> pixels{1, 1024, 32768, 65535};
+            FrameWriter writer(options.outputDirectory, options.framePipe, 2);
+            if (!writer.OnFrame(DtDataFrame{
+                    7,
+                    {},
+                    pixels.data(),
+                    nullptr,
+                    2,
+                    2,
+                    1,
+                    0}))
+            {
+                throw std::runtime_error("Detector frame stream self-test failed.");
+            }
+            std::cout << "{\"event\":\"frame_stream_self_test\",\"ok\":true}"
+                      << std::endl;
+            return 0;
+        }
         if (options.inspectOnly)
         {
             return 0;
         }
 
-        if (options.outputDirectory.empty())
+        if (options.outputDirectory.empty() && options.framePipe.empty())
         {
-            throw std::runtime_error("--output-directory is required in detector mode.");
+            throw std::runtime_error(
+                "--frame-pipe or --output-directory is required in detector mode.");
         }
 
         alignas(16) std::array<std::byte, 0x200> detectorStorage{};
@@ -540,7 +717,10 @@ int main(int argc, char** argv)
         bool grabbing = false;
         try
         {
-            FrameWriter writer(options.outputDirectory, options.aggregateHeight);
+            FrameWriter writer(
+                options.outputDirectory,
+                options.framePipe,
+                options.aggregateHeight);
             setCallback(detectorStorage.data(), DtDataCallback{HandleFrame, &writer});
             started = start(detectorStorage.data(), options.detector);
             if (!started)

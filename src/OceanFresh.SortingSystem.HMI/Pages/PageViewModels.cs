@@ -500,6 +500,8 @@ public sealed class MonitoringPageViewModel : ViewModelBase, IActivatablePageVie
 
     public string PlcXrayInputDirectory { get; } = ResolvePlcXrayInputDirectory();
 
+    public string XrayCaptureSourceText { get; } = ResolveXrayCaptureSourceText();
+
     public double PreviewDesignWidth
     {
         get => _previewDesignWidth;
@@ -995,7 +997,7 @@ public sealed class MonitoringPageViewModel : ViewModelBase, IActivatablePageVie
             await UpdateActiveProductTraitsAsync(active.Channel.SeafoodProductId);
             if (!HasSelectedImage)
             {
-                StatusMessage = $"机器启动后会自动读取 PLC/X 光采集目录的新图片: {PlcXrayInputDirectory}";
+                StatusMessage = $"机器启动后会自动读取 X 光采集链路: {XrayCaptureSourceText}";
             }
         }
         catch (Exception ex)
@@ -1197,7 +1199,7 @@ public sealed class MonitoringPageViewModel : ViewModelBase, IActivatablePageVie
                 return;
             }
 
-            StatusMessage = $"机器已启动，检测任务已自动创建；正在监听 PLC/X 光采集目录并允许硬件剔除: {PlcXrayInputDirectory}";
+            StatusMessage = $"机器已启动，检测任务已自动创建；正在接收 X 光图像并允许硬件剔除: {XrayCaptureSourceText}";
         }
         catch (OperationCanceledException)
         {
@@ -1300,7 +1302,7 @@ public sealed class MonitoringPageViewModel : ViewModelBase, IActivatablePageVie
         {
             if (ex.Message.Contains("当前已有检测任务运行中", StringComparison.Ordinal))
             {
-                StatusMessage = "当前检测任务已在运行中，PLC/X 光采集目录的新图片会继续进入 YOLO 推理。";
+                StatusMessage = "当前检测任务已在运行中，探测器实时图像会继续进入 YOLO 推理。";
                 return;
             }
 
@@ -1339,7 +1341,7 @@ public sealed class MonitoringPageViewModel : ViewModelBase, IActivatablePageVie
         DataSourceStatusText = config.Status;
         DataSourceDirectoryText = config.Mode == RuntimeDataSourceMode.LocalImageDirectory
             ? $"本地目录: {config.LocalDirectoryPath}"
-            : $"采集目录: {PlcXrayInputDirectory}";
+            : $"采集链路: {XrayCaptureSourceText}";
         DataSourceProgressText = config.Mode == RuntimeDataSourceMode.LocalImageDirectory
             ? $"进度: {config.CurrentIndex}/{config.ImageCount} · 硬件剔除: 禁用"
             : "硬件剔除: 启用";
@@ -2843,6 +2845,20 @@ public sealed class MonitoringPageViewModel : ViewModelBase, IActivatablePageVie
                 Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
                 "OceanFreshSortingSystem");
         return Path.GetFullPath(Path.Combine(root, "plc-xray-input"));
+    }
+
+    private static string ResolveXrayCaptureSourceText()
+    {
+        var adapter = Environment.GetEnvironmentVariable("OCEANFRESH_HARDWARE_ADAPTER");
+        var detectorEnabled =
+            Environment.GetEnvironmentVariable("OCEANFRESH_TECHIK_ENABLE_DETECTOR");
+        var directStreaming =
+            string.Equals(adapter, "techik-direct", StringComparison.OrdinalIgnoreCase) &&
+            (string.Equals(detectorEnabled, "true", StringComparison.OrdinalIgnoreCase) ||
+             string.Equals(detectorEnabled, "1", StringComparison.OrdinalIgnoreCase));
+        return directStreaming
+            ? "Techik 探测器实时内存流"
+            : ResolvePlcXrayInputDirectory();
     }
 
     private static Dictionary<int, string> ResolveLabelMap(string labelMapJson)

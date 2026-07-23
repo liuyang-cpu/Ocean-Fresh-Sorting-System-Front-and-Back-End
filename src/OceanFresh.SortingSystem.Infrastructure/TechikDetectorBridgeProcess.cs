@@ -1,7 +1,9 @@
 using System.Diagnostics;
 using System.Globalization;
+using System.IO.Pipes;
 using System.Security.Cryptography;
 using System.Text.Json;
+using System.Threading.Channels;
 
 namespace OceanFresh.SortingSystem.Infrastructure;
 
@@ -24,8 +26,17 @@ public sealed record TechikPeripheralSnapshot(
         new(false, false, 0, 0, 0, 0, 0, false, false, false, 0, false, false);
 }
 
+public sealed record TechikDetectorFrame(
+    byte[] RawFrame,
+    int DetectorId,
+    int Width,
+    int Height,
+    long Sequence,
+    DateTimeOffset CapturedAt);
+
 public sealed class TechikDetectorBridgeProcess(TechikIntegrationOptions options) : IDisposable
 {
+    private const int FrameQueueCapacity = 4;
     private static readonly IReadOnlyDictionary<string, string> CapturedPluginHashes =
         new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
@@ -41,6 +52,10 @@ public sealed class TechikDetectorBridgeProcess(TechikIntegrationOptions options
     private TaskCompletionSource<bool>? _started;
     private TaskCompletionSource<bool>? _pendingCommand;
     private string? _pendingEvent;
+    private NamedPipeServerStream? _framePipe;
+    private CancellationTokenSource? _framePumpCancellation;
+    private Task? _framePump;
+    private Channel<TechikDetectorFrame>? _frames;
     private string _lastMessage = "探测器桥接尚未启动。";
     private bool _detectorStarted;
     private bool _peripheralsConnected;
@@ -54,6 +69,9 @@ public sealed class TechikDetectorBridgeProcess(TechikIntegrationOptions options
     public bool PeripheralsConnected => _peripheralsConnected;
 
     public TechikPeripheralSnapshot PeripheralSnapshot => _peripheralSnapshot;
+
+    public bool IsDirectFrameStreamingEnabled =>
+        options.Mode == TechikIntegrationMode.Direct && options.EnableDetector;
 
     public bool FilesAreReady =>
         File.Exists(options.DetectorBridgeExecutablePath) &&
@@ -94,6 +112,25 @@ public sealed class TechikDetectorBridgeProcess(TechikIntegrationOptions options
             }
 
             Directory.CreateDirectory(options.DetectorFrameDirectory);
+            var framePipeName =
+                $"OceanFresh.Techik.Detector.{Environment.ProcessId}.{Guid.NewGuid():N}";
+            _framePipe = new NamedPipeServerStream(
+                framePipeName,
+                PipeDirection.In,
+                1,
+                PipeTransmissionMode.Byte,
+                PipeOptions.Asynchronous,
+                1024 * 1024,
+                1024 * 1024);
+            _framePumpCancellation = new CancellationTokenSource();
+            _frames = Channel.CreateBounded<TechikDetectorFrame>(
+                new BoundedChannelOptions(FrameQueueCapacity)
+                {
+                    SingleReader = true,
+                    SingleWriter = true,
+                    FullMode = BoundedChannelFullMode.DropOldest
+                });
+            var pipeConnection = _framePipe.WaitForConnectionAsync(cancellationToken);
             var startup = options.Profile.DetectorStartup;
             var startInfo = new ProcessStartInfo
             {
@@ -107,6 +144,7 @@ public sealed class TechikDetectorBridgeProcess(TechikIntegrationOptions options
             };
             Add(startInfo, "--run-detector");
             Add(startInfo, "--sdk-root", options.DetectorSdkRoot);
+            Add(startInfo, "--frame-pipe", framePipeName);
             Add(startInfo, "--output-directory", options.DetectorFrameDirectory);
             Add(startInfo, "--aggregate-height", "300");
             Add(startInfo, "--id", startup.Id);
@@ -190,6 +228,11 @@ public sealed class TechikDetectorBridgeProcess(TechikIntegrationOptions options
 
             _process.BeginOutputReadLine();
             _process.BeginErrorReadLine();
+            await pipeConnection.WaitAsync(TimeSpan.FromSeconds(30), cancellationToken);
+            _framePump = PumpFramesAsync(
+                _framePipe,
+                _frames.Writer,
+                _framePumpCancellation.Token);
             await _started.Task.WaitAsync(TimeSpan.FromSeconds(30), cancellationToken);
         }
         catch
@@ -248,6 +291,31 @@ public sealed class TechikDetectorBridgeProcess(TechikIntegrationOptions options
                 $"eject {port} {(activeHigh ? 1 : 0)} {pulseMicroseconds}"),
             "eject_completed",
             cancellationToken);
+    }
+
+    public async Task<TechikDetectorFrame?> ReadFrameAsync(
+        CancellationToken cancellationToken)
+    {
+        await EnsureStartedAsync(cancellationToken);
+        var frames = _frames
+            ?? throw new InvalidOperationException("Techik 探测器实时帧通道尚未建立。");
+        using var readTimeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        readTimeout.CancelAfter(TimeSpan.FromMilliseconds(250));
+        try
+        {
+            return await frames.Reader.ReadAsync(readTimeout.Token);
+        }
+        catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
+        {
+            return null;
+        }
+        catch (ChannelClosedException exception)
+        {
+            StopProcess();
+            throw new InvalidOperationException(
+                "Techik 探测器实时帧通道已关闭。",
+                exception.InnerException ?? exception);
+        }
     }
 
     public void Dispose()
@@ -340,6 +408,18 @@ public sealed class TechikDetectorBridgeProcess(TechikIntegrationOptions options
 
     private void StopProcess()
     {
+        var framePumpCancellation = _framePumpCancellation;
+        var framePipe = _framePipe;
+        var frames = _frames;
+        _framePumpCancellation = null;
+        _framePipe = null;
+        _framePump = null;
+        _frames = null;
+        framePumpCancellation?.Cancel();
+        framePipe?.Dispose();
+        frames?.Writer.TryComplete();
+        framePumpCancellation?.Dispose();
+
         var process = _process;
         _process = null;
         if (process is null)
@@ -372,6 +452,40 @@ public sealed class TechikDetectorBridgeProcess(TechikIntegrationOptions options
             _detectorStarted = false;
             _peripheralsConnected = false;
             _peripheralSnapshot = TechikPeripheralSnapshot.Empty;
+        }
+    }
+
+    private static async Task PumpFramesAsync(
+        Stream stream,
+        ChannelWriter<TechikDetectorFrame> writer,
+        CancellationToken cancellationToken)
+    {
+        Exception? completionError = null;
+        try
+        {
+            while (!cancellationToken.IsCancellationRequested)
+            {
+                writer.TryWrite(await TechikRawFrameCodec.ReadFrameAsync(
+                    stream,
+                    cancellationToken));
+            }
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+        }
+        catch (EndOfStreamException)
+        {
+        }
+        catch (IOException) when (cancellationToken.IsCancellationRequested)
+        {
+        }
+        catch (Exception exception)
+        {
+            completionError = exception;
+        }
+        finally
+        {
+            writer.TryComplete(completionError);
         }
     }
 
