@@ -87,6 +87,7 @@ $env:OCEANFRESH_TECHIK_CONVEYOR_DIRECTION = "true"
 | `OCEANFRESH_TECHIK_DETECTOR_BRIDGE` | 原生 64 位桥接程序 | 安装目录 `HardwareBridge` |
 | `OCEANFRESH_TECHIK_DETECTOR_SDK_ROOT` | demo 探测器 SDK 目录 | Techik 根目录下 `detector-sdk` |
 | `OCEANFRESH_TECHIK_FRAME_DIRECTORY` | 旧版文件传输兼容目录；实时管道不可用时保留诊断能力 | `%LOCALAPPDATA%\OceanFreshSortingSystem\techik-frames` |
+| `OCEANFRESH_TECHIK_FRAME_QUEUE_CAPACITY` | 原生桥接和应用层各自允许等待处理的完整帧数（满时丢弃最旧帧） | `16`（允许 4–128） |
 | `OCEANFRESH_TECHIK_ENABLE_OUTPUT` | 允许光源、传送带和物理剔除动作 | `false` |
 | `OCEANFRESH_TECHIK_XRAY_KV` | 覆盖产品 X 光电压 | 从产品配置读取 |
 | `OCEANFRESH_TECHIK_XRAY_UA` | 覆盖产品 X 光电流 | 从产品配置读取 |

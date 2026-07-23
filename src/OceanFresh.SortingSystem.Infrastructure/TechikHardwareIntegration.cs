@@ -171,6 +171,7 @@ public sealed record TechikIntegrationOptions(
     private const string DetectorSdkRootEnvVar = "OCEANFRESH_TECHIK_DETECTOR_SDK_ROOT";
     private const string DetectorBridgeExecutableEnvVar = "OCEANFRESH_TECHIK_DETECTOR_BRIDGE";
     private const string DetectorFrameDirectoryEnvVar = "OCEANFRESH_TECHIK_FRAME_DIRECTORY";
+    private const string DetectorFrameQueueCapacityEnvVar = "OCEANFRESH_TECHIK_FRAME_QUEUE_CAPACITY";
     private const string DetectorEnabledEnvVar = "OCEANFRESH_TECHIK_ENABLE_DETECTOR";
     private const string PeripheralsEnabledEnvVar = "OCEANFRESH_TECHIK_ENABLE_PERIPHERALS";
     private const string XrayVoltageEnvVar = "OCEANFRESH_TECHIK_XRAY_KV";
@@ -227,6 +228,10 @@ public sealed record TechikIntegrationOptions(
                     Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
                     "OceanFreshSortingSystem",
                     "techik-frames")),
+            FrameQueueCapacity = Math.Clamp(
+                ReadPositiveInt(DetectorFrameQueueCapacityEnvVar, 16),
+                4,
+                128),
             EnableDetector = ReadBoolean(DetectorEnabledEnvVar),
             EnablePeripherals = ReadBoolean(PeripheralsEnabledEnvVar),
             ProductionSetpoints = new TechikProductionSetpoints(
@@ -270,6 +275,8 @@ public sealed record TechikIntegrationOptions(
     public string DetectorBridgeExecutablePath { get; init; } = string.Empty;
 
     public string DetectorFrameDirectory { get; init; } = string.Empty;
+
+    public int FrameQueueCapacity { get; init; } = 16;
 
     public bool EnableDetector { get; init; }
 

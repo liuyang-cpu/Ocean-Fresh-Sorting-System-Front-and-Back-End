@@ -97,6 +97,7 @@ namespace
         bool frameStreamSelfTest{};
         bool runPeripherals{};
         int aggregateHeight{300};
+        int frameQueueCapacity{16};
         DtInfo detector{
             0, 0, 0, 128, 1536, 1, 0.4, 50, 0, true, false, {}, 0, 0,
             0, 0, 56, 4, 5, 25, 0, 0, 250, 1000, 0, 52428};
@@ -195,10 +196,12 @@ namespace
         FrameWriter(
             std::filesystem::path outputDirectory,
             std::string framePipe,
-            int aggregateHeight)
+            int aggregateHeight,
+            std::size_t frameQueueCapacity)
             : outputDirectory_(std::move(outputDirectory)),
               framePipe_(std::move(framePipe)),
-              aggregateHeight_(aggregateHeight)
+              aggregateHeight_(aggregateHeight),
+              maxQueuedFrames_(frameQueueCapacity)
         {
             if (!framePipe_.empty())
             {
@@ -376,7 +379,7 @@ namespace
             {
                 return;
             }
-            if (pipeFrames_.size() >= MaxQueuedFrames)
+            if (pipeFrames_.size() >= maxQueuedFrames_)
             {
                 pipeFrames_.pop_front();
                 ++droppedFrames_;
@@ -438,10 +441,10 @@ namespace
             }
         }
 
-        static constexpr std::size_t MaxQueuedFrames = 4;
         std::filesystem::path outputDirectory_;
         std::string framePipe_;
         int aggregateHeight_{};
+        std::size_t maxQueuedFrames_{16};
         std::mutex gate_;
         std::vector<std::uint16_t> pixels_;
         std::size_t rowWidth_{};
@@ -519,6 +522,10 @@ namespace
         options.frameStreamSelfTest = HasFlag(argc, argv, "--frame-stream-self-test");
         options.runPeripherals = HasFlag(argc, argv, "--run-peripherals");
         options.aggregateHeight = ReadInt(argc, argv, "--aggregate-height", 300);
+        options.frameQueueCapacity = std::clamp(
+            ReadInt(argc, argv, "--frame-queue-capacity", 16),
+            4,
+            128);
         options.detector.id = ReadInt(argc, argv, "--id", 0);
         options.detector.type = ReadInt(argc, argv, "--type", 0);
         options.detector.networkId = ReadInt(argc, argv, "--network-id", 0);
@@ -683,7 +690,11 @@ int main(int argc, char** argv)
         if (options.frameStreamSelfTest)
         {
             const std::array<std::uint16_t, 4> pixels{1, 1024, 32768, 65535};
-            FrameWriter writer(options.outputDirectory, options.framePipe, 2);
+            FrameWriter writer(
+                options.outputDirectory,
+                options.framePipe,
+                2,
+                static_cast<std::size_t>(options.frameQueueCapacity));
             if (!writer.OnFrame(DtDataFrame{
                     7,
                     {},
@@ -720,7 +731,8 @@ int main(int argc, char** argv)
             FrameWriter writer(
                 options.outputDirectory,
                 options.framePipe,
-                options.aggregateHeight);
+                options.aggregateHeight,
+                static_cast<std::size_t>(options.frameQueueCapacity));
             setCallback(detectorStorage.data(), DtDataCallback{HandleFrame, &writer});
             started = start(detectorStorage.data(), options.detector);
             if (!started)

@@ -36,7 +36,6 @@ public sealed record TechikDetectorFrame(
 
 public sealed class TechikDetectorBridgeProcess(TechikIntegrationOptions options) : IDisposable
 {
-    private const int FrameQueueCapacity = 4;
     private static readonly IReadOnlyDictionary<string, string> CapturedPluginHashes =
         new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
@@ -124,7 +123,7 @@ public sealed class TechikDetectorBridgeProcess(TechikIntegrationOptions options
                 1024 * 1024);
             _framePumpCancellation = new CancellationTokenSource();
             _frames = Channel.CreateBounded<TechikDetectorFrame>(
-                new BoundedChannelOptions(FrameQueueCapacity)
+                new BoundedChannelOptions(options.FrameQueueCapacity)
                 {
                     SingleReader = true,
                     SingleWriter = true,
@@ -147,6 +146,7 @@ public sealed class TechikDetectorBridgeProcess(TechikIntegrationOptions options
             Add(startInfo, "--frame-pipe", framePipeName);
             Add(startInfo, "--output-directory", options.DetectorFrameDirectory);
             Add(startInfo, "--aggregate-height", "300");
+            Add(startInfo, "--frame-queue-capacity", options.FrameQueueCapacity);
             Add(startInfo, "--id", startup.Id);
             Add(startInfo, "--type", startup.Type);
             Add(startInfo, "--network-id", startup.NetworkId);
