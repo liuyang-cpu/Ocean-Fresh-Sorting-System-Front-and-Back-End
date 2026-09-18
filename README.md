@@ -1,6 +1,6 @@
 # Ocean Fresh Sorting System
 
-> 教师检查和首次运行请先阅读：[无硬件接入版运行说明](docs/教师运行说明.md)。
+> 首次运行请先阅读：[运行说明](docs/运行说明.md)。
 
 ## Quick Start
 

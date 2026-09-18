@@ -3,6 +3,17 @@ chcp 65001 >nul
 setlocal
 cd /d "%~dp0"
 
+rem Keep large installer caches on the same drive as the repository.
+rem This prevents pip and NuGet from silently filling the Windows system drive.
+set "OCEANFRESH_SETUP_CACHE=%CD%\.setup-cache"
+set "TEMP=%OCEANFRESH_SETUP_CACHE%\temp"
+set "TMP=%TEMP%"
+set "PIP_CACHE_DIR=%OCEANFRESH_SETUP_CACHE%\pip"
+set "NUGET_PACKAGES=%OCEANFRESH_SETUP_CACHE%\nuget"
+if not exist "%TEMP%" mkdir "%TEMP%"
+if not exist "%PIP_CACHE_DIR%" mkdir "%PIP_CACHE_DIR%"
+if not exist "%NUGET_PACKAGES%" mkdir "%NUGET_PACKAGES%"
+
 echo [0/6] Checking available disk space...
 powershell -NoProfile -ExecutionPolicy Bypass -Command "$drive = [IO.DriveInfo]::new([IO.Path]::GetPathRoot((Get-Location).Path)); if ($drive.AvailableFreeSpace -lt 5GB) { Write-Host ('ERROR: At least 5 GB of free space is required on ' + $drive.Name + ' Current free space: ' + [math]::Round($drive.AvailableFreeSpace / 1GB, 2) + ' GB.'); exit 1 }"
 if errorlevel 1 (

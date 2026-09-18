@@ -29,6 +29,8 @@ predict/**/service_runtime/
 predict/**/runs/
 
 # Python caches
+.venv/
+.setup-cache/
 __pycache__/
 *.py[cod]
 
