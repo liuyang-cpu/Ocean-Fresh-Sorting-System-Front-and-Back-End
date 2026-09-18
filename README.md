@@ -2,6 +2,22 @@
 
 > 教师检查和首次运行请先阅读：[无硬件接入版运行说明](docs/教师运行说明.md)。
 
+## Quick Start
+
+首次使用，在仓库根目录双击：
+
+```text
+setup-environment.cmd
+```
+
+环境准备成功后，以后直接双击：
+
+```text
+start-oceanfresh.cmd
+```
+
+主程序会自动启动 LocalApi、YOLO 服务和 SQLite 数据库，不需要分别启动三个终端。详细环境要求、首次配置和故障排查请阅读上面的运行说明。
+
 Windows industrial HMI and local backend for X-ray seafood inspection, YOLO inference, production statistics, manual review, device monitoring, and ejector-control integration.
 
 ## System Goal
@@ -117,7 +133,7 @@ If the WPF HMI is running, the build may fail because the executable is locked. 
 
 ## Current Startup Notes
 
-The current delivery UI is the WPF HMI. Start LocalApi and HMI from the solution or project commands used by the current development workflow.
+The current delivery UI is the WPF HMI. Run `setup-environment.cmd` once, then use `start-oceanfresh.cmd` for normal startup. The HMI automatically starts LocalApi and the YOLO service.
 
 The Electron/Vue one-click startup script and desktop shortcut may still exist for prototype preview, but they are not the active delivery path for the current specification.
 
