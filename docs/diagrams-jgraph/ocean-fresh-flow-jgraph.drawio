@@ -1,0 +1,209 @@
+<mxfile host="app.diagrams.net" modified="2026-06-08T15:42:00.000Z" agent="Codex" version="27.0.5" type="device">
+  <diagram id="ocean-fresh-flow" name="Flow">
+    <mxGraphModel dx="1600" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="2400" pageHeight="1800" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <mxCell id="title" value="海洋生鲜分拣系统联调与推理流程图" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=26;fontStyle=1;fontColor=#10355c;" vertex="1" parent="1">
+          <mxGeometry x="70" y="30" width="560" height="40" as="geometry" />
+        </mxCell>
+
+        <mxCell id="lane_hmi" value="前端监控页 / 联调入口" style="swimlane;html=1;childLayout=stackLayout;rounded=0;horizontal=0;startSize=30;fillColor=#f5f9ff;strokeColor=#8fb5d8;fontStyle=1;fontSize=16;" vertex="1" parent="1">
+          <mxGeometry x="60" y="90" width="560" height="1560" as="geometry" />
+        </mxCell>
+        <mxCell id="lane_backend" value="后端 Runtime / LocalApi" style="swimlane;html=1;childLayout=stackLayout;rounded=0;horizontal=0;startSize=30;fillColor=#f8fffb;strokeColor=#8cc1a3;fontStyle=1;fontSize=16;" vertex="1" parent="1">
+          <mxGeometry x="700" y="90" width="700" height="1560" as="geometry" />
+        </mxCell>
+        <mxCell id="lane_yolo" value="YOLO FastAPI 服务" style="swimlane;html=1;childLayout=stackLayout;rounded=0;horizontal=0;startSize=30;fillColor=#fff9f2;strokeColor=#d8b78f;fontStyle=1;fontSize=16;" vertex="1" parent="1">
+          <mxGeometry x="1480" y="90" width="700" height="1560" as="geometry" />
+        </mxCell>
+
+        <mxCell id="n_start" value="开始联调" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#1d4ed8;strokeWidth=2;fontSize=16;" vertex="1" parent="1">
+          <mxGeometry x="230" y="130" width="180" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="n_select" value="导入单张图片&#xa;或选择连续图像文件夹" style="rounded=1;whiteSpace=wrap;html=1;arcSize=16;fillColor=#ffffff;strokeColor=#4c8cc9;strokeWidth=2;fontSize=15;" vertex="1" parent="1">
+          <mxGeometry x="150" y="250" width="340" height="90" as="geometry" />
+        </mxCell>
+
+        <mxCell id="n_channel" value="读取当前启用通道" style="rounded=1;whiteSpace=wrap;html=1;arcSize=16;fillColor=#ffffff;strokeColor=#42a36c;strokeWidth=2;fontSize=15;" vertex="1" parent="1">
+          <mxGeometry x="920" y="130" width="260" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="n_resolve" value="解析运行参数&#xa;海鲜产品 + 模型 + 产品级 JSON + 阈值" style="rounded=1;whiteSpace=wrap;html=1;arcSize=16;fillColor=#ffffff;strokeColor=#42a36c;strokeWidth=2;fontSize=15;" vertex="1" parent="1">
+          <mxGeometry x="850" y="250" width="420" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="n_mode" value="联调模式?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#42a36c;strokeWidth=2;fontSize=15;" vertex="1" parent="1">
+          <mxGeometry x="930" y="420" width="220" height="110" as="geometry" />
+        </mxCell>
+
+        <mxCell id="n_manual" value="调用单张 /infer" style="rounded=1;whiteSpace=wrap;html=1;arcSize=16;fillColor=#ffffff;strokeColor=#d08b2d;strokeWidth=2;fontSize=15;" vertex="1" parent="1">
+          <mxGeometry x="1690" y="260" width="260" height="80" as="geometry" />
+        </mxCell>
+
+        <mxCell id="n_start_stream" value="start&#xa;创建流式会话并预热模型" style="rounded=1;whiteSpace=wrap;html=1;arcSize=16;fillColor=#ffffff;strokeColor=#d08b2d;strokeWidth=2;fontSize=15;" vertex="1" parent="1">
+          <mxGeometry x="1660" y="420" width="320" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="n_push" value="按 68ms/帧&#xa;送入一张图片" style="rounded=1;whiteSpace=wrap;html=1;arcSize=16;fillColor=#ffffff;strokeColor=#42a36c;strokeWidth=2;fontSize=15;" vertex="1" parent="1">
+          <mxGeometry x="910" y="620" width="280" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="n_first" value="是否为会话首帧?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#d08b2d;strokeWidth=2;fontSize=15;" vertex="1" parent="1">
+          <mxGeometry x="1720" y="620" width="200" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="n_buffer" value="首帧缓冲&#xa;等待下一帧" style="shape=parallelogram;perimeter=parallelogramPerimeter;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#d08b2d;strokeWidth=2;fontSize=15;" vertex="1" parent="1">
+          <mxGeometry x="1590" y="820" width="240" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="n_predict" value="内存常驻模型推理&#xa;model.predict()" style="rounded=1;whiteSpace=wrap;html=1;arcSize=16;fillColor=#ffffff;strokeColor=#d08b2d;strokeWidth=2;fontSize=15;" vertex="1" parent="1">
+          <mxGeometry x="1880" y="820" width="250" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="n_phase2" value="同帧处理 + 相邻帧去重&#xa;phase2 后处理" style="rounded=1;whiteSpace=wrap;html=1;arcSize=16;fillColor=#ffffff;strokeColor=#d08b2d;strokeWidth=2;fontSize=15;" vertex="1" parent="1">
+          <mxGeometry x="1710" y="1020" width="320" height="90" as="geometry" />
+        </mxCell>
+
+        <mxCell id="n_finalize" value="定稿上一帧结果" style="rounded=1;whiteSpace=wrap;html=1;arcSize=16;fillColor=#ffffff;strokeColor=#42a36c;strokeWidth=2;fontSize=15;" vertex="1" parent="1">
+          <mxGeometry x="920" y="1020" width="260" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="n_map" value="按海鲜产品映射&#xa;class_x → 业务性状" style="rounded=1;whiteSpace=wrap;html=1;arcSize=16;fillColor=#ffffff;strokeColor=#42a36c;strokeWidth=2;fontSize=15;" vertex="1" parent="1">
+          <mxGeometry x="890" y="1180" width="320" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="n_eject" value="计算剔除预览&#xa;目标通道 + 触发时延" style="rounded=1;whiteSpace=wrap;html=1;arcSize=16;fillColor=#ffffff;strokeColor=#42a36c;strokeWidth=2;fontSize=15;" vertex="1" parent="1">
+          <mxGeometry x="920" y="1460" width="260" height="90" as="geometry" />
+        </mxCell>
+
+        <mxCell id="n_stats" value="更新识别结果图、检测框&#xa;总数统计、性状统计、性能指标" style="rounded=1;whiteSpace=wrap;html=1;arcSize=16;fillColor=#ffffff;strokeColor=#4c8cc9;strokeWidth=2;fontSize=15;" vertex="1" parent="1">
+          <mxGeometry x="110" y="1180" width="380" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="n_more" value="还有下一帧?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#42a36c;strokeWidth=2;fontSize=15;" vertex="1" parent="1">
+          <mxGeometry x="940" y="1320" width="200" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="n_finish" value="finish&#xa;输出最后缓冲帧" style="rounded=1;whiteSpace=wrap;html=1;arcSize=16;fillColor=#ffffff;strokeColor=#d08b2d;strokeWidth=2;fontSize=15;" vertex="1" parent="1">
+          <mxGeometry x="1660" y="1320" width="340" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="n_end" value="联调结束" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#1d4ed8;strokeWidth=2;fontSize=16;" vertex="1" parent="1">
+          <mxGeometry x="210" y="1465" width="200" height="70" as="geometry" />
+        </mxCell>
+
+        <mxCell id="f1" edge="1" parent="1" source="n_start" target="n_select" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeWidth=2;endArrow=block;endFill=1;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="f2" edge="1" parent="1" source="n_select" target="n_channel" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeWidth=2;endArrow=block;endFill=1;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="f3" edge="1" parent="1" source="n_channel" target="n_resolve" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeWidth=2;endArrow=block;endFill=1;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="f4" edge="1" parent="1" source="n_resolve" target="n_mode" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeWidth=2;endArrow=block;endFill=1;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="f5" value="单张图片" edge="1" parent="1" source="n_mode" target="n_manual" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeWidth=2;endArrow=block;endFill=1;labelBackgroundColor=#ffffff;">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1310" y="475" />
+              <mxPoint x="1310" y="300" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="f6" value="连续回放" edge="1" parent="1" source="n_mode" target="n_start_stream" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeWidth=2;endArrow=block;endFill=1;labelBackgroundColor=#ffffff;">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1310" y="475" />
+              <mxPoint x="1310" y="465" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="f7" edge="1" parent="1" source="n_manual" target="n_map" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeWidth=2;strokeColor=#d08b2d;endArrow=block;endFill=1;">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1820" y="1170" />
+              <mxPoint x="1250" y="1170" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="f8" edge="1" parent="1" source="n_start_stream" target="n_push" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeWidth=2;strokeColor=#d08b2d;endArrow=block;endFill=1;">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1490" y="665" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="f9" edge="1" parent="1" source="n_push" target="n_first" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeWidth=2;strokeColor=#d08b2d;endArrow=block;endFill=1;">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1450" y="665" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="f10" value="是" edge="1" parent="1" source="n_first" target="n_buffer" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeWidth=2;strokeColor=#d08b2d;endArrow=block;endFill=1;labelBackgroundColor=#ffffff;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="f11" value="否" edge="1" parent="1" source="n_first" target="n_predict" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeWidth=2;strokeColor=#d08b2d;endArrow=block;endFill=1;labelBackgroundColor=#ffffff;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="f12" edge="1" parent="1" source="n_predict" target="n_phase2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeWidth=2;strokeColor=#d08b2d;endArrow=block;endFill=1;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="f13" edge="1" parent="1" source="n_phase2" target="n_finalize" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeWidth=2;strokeColor=#d08b2d;endArrow=block;endFill=1;">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1490" y="1055" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="f14" edge="1" parent="1" source="n_finalize" target="n_map" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeWidth=2;endArrow=block;endFill=1;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="f15" edge="1" parent="1" source="n_map" target="n_stats" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeWidth=2;endArrow=block;endFill=1;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="f16" edge="1" parent="1" source="n_map" target="n_eject" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeWidth=2;endArrow=block;endFill=1;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="f17" edge="1" parent="1" source="n_buffer" target="n_more" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeWidth=2;strokeColor=#d08b2d;endArrow=block;endFill=1;">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1510" y="1365" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="f18" edge="1" parent="1" source="n_stats" target="n_more" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeWidth=2;strokeColor=#4c8cc9;endArrow=block;endFill=1;">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="710" y="1365" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="f19" value="是" edge="1" parent="1" source="n_more" target="n_push" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeWidth=2;endArrow=block;endFill=1;labelBackgroundColor=#ffffff;">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="780" y="1375" />
+              <mxPoint x="780" y="660" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="f20" value="否" edge="1" parent="1" source="n_more" target="n_finish" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeWidth=2;endArrow=block;endFill=1;labelBackgroundColor=#ffffff;">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1320" y="1375" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="f21" edge="1" parent="1" source="n_finish" target="n_map" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeWidth=2;strokeColor=#d08b2d;endArrow=block;endFill=1;">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1490" y="1225" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="f22" edge="1" parent="1" source="n_finish" target="n_end" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeWidth=2;strokeColor=#d08b2d;endArrow=block;endFill=1;">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1480" y="1500" />
+              <mxPoint x="520" y="1500" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

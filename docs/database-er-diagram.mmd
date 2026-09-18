@@ -1,0 +1,95 @@
+erDiagram
+    seafood_products ||--o{ seafood_traits : "seafood_product_id"
+    seafood_products ||--o{ channel_configs : "seafood_product_id"
+    model_versions ||--o{ channel_configs : "model_version_id"
+    model_versions ||--o{ inspection_records : "model_version_id"
+
+    seafood_products {
+        TEXT id
+        TEXT code
+        TEXT name
+        INTEGER is_enabled
+        TEXT classes_file_path
+        TEXT label_map_json
+        TEXT predict_config_path
+    }
+
+    seafood_traits {
+        TEXT id
+        TEXT seafood_product_id
+        TEXT name
+        INTEGER is_normal
+        INTEGER sort_order
+        INTEGER is_enabled
+    }
+
+    model_versions {
+        TEXT id
+        TEXT seafood_category_id
+        TEXT version
+        TEXT source_weight_path
+        TEXT deployment_model_path
+        TEXT input_tensor_shape
+        TEXT label_map_json
+        REAL confidence_threshold
+        REAL nms_threshold
+        TEXT notes
+        INTEGER status
+        TEXT exported_at
+        TEXT created_at
+    }
+
+    channel_configs {
+        TEXT id
+        INTEGER channel_no
+        TEXT name
+        TEXT seafood_product_id
+        TEXT model_version_id
+        TEXT model_path
+        REAL confidence_threshold
+        INTEGER image_width
+        INTEGER image_height
+        REAL conveyor_speed_meters_per_second
+        REAL xray_voltage_kv
+        REAL xray_current_ma
+        TEXT predict_config_path
+        TEXT predict_input_directory
+        TEXT predict_output_directory
+        REAL camera_to_eject_distance_millimeters
+        REAL millimeters_per_pixel_y
+        INTEGER software_latency_milliseconds
+        INTEGER actuator_delay_milliseconds
+        TEXT horizontal_lane_mapping_json
+        INTEGER is_enabled
+    }
+
+    inspection_records {
+        TEXT id
+        TEXT recipe_id
+        TEXT model_version_id
+        TEXT batch_code
+        TEXT image_path
+        INTEGER is_rejected
+        INTEGER is_timed_out
+        TEXT captured_at
+        TEXT detections_json
+        TEXT eject_command_json
+    }
+
+    alarm_events {
+        TEXT id
+        TEXT severity
+        TEXT source
+        TEXT code
+        TEXT message
+        TEXT raised_at
+        INTEGER is_acknowledged
+    }
+
+    user_accounts {
+        TEXT id
+        TEXT user_name
+        TEXT display_name
+        INTEGER role
+        INTEGER is_enabled
+    }

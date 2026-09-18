@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Ocean Fresh Sorting System - Database ER Diagram</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: "Segoe UI", "Microsoft YaHei", sans-serif;
+      background: #0d1b2e;
+      color: #e7eef8;
+    }
+    .wrap {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 32px 24px 56px;
+    }
+    h1 {
+      margin: 0 0 12px;
+      font-size: 32px;
+    }
+    p.note {
+      margin: 0 0 24px;
+      color: #9fb4d2;
+      line-height: 1.6;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(320px, 1fr));
+      gap: 18px;
+      margin-bottom: 28px;
+    }
+    .card {
+      background: #132844;
+      border: 1px solid #23456f;
+      border-radius: 16px;
+      padding: 18px 18px 14px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18);
+    }
+    .card h2 {
+      margin: 0 0 12px;
+      font-size: 20px;
+      color: #7fd0ff;
+    }
+    ul {
+      margin: 0;
+      padding-left: 18px;
+      line-height: 1.75;
+    }
+    .diagram {
+      background: #101f35;
+      border: 1px solid #23456f;
+      border-radius: 20px;
+      padding: 24px;
+    }
+    .row {
+      display: flex;
+      justify-content: center;
+      gap: 24px;
+      flex-wrap: wrap;
+      margin: 18px 0;
+    }
+    .entity {
+      min-width: 220px;
+      background: #173255;
+      border: 1px solid #2b5a8f;
+      border-radius: 16px;
+      overflow: hidden;
+    }
+    .entity .title {
+      background: #214874;
+      color: #ffffff;
+      padding: 12px 14px;
+      font-weight: 700;
+      font-size: 18px;
+    }
+    .entity .body {
+      padding: 12px 14px;
+      color: #c8d6ea;
+      line-height: 1.7;
+      font-size: 14px;
+    }
+    .arrow {
+      text-align: center;
+      color: #7fd0ff;
+      font-size: 14px;
+      margin: 4px 0;
+    }
+    .footer {
+      margin-top: 22px;
+      color: #9fb4d2;
+      line-height: 1.7;
+      font-size: 14px;
+    }
+    code {
+      background: rgba(255,255,255,0.08);
+      padding: 2px 6px;
+      border-radius: 6px;
+    }
+    @media (max-width: 900px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>数据库 ER 图</h1>
+    <p class="note">
+      这是当前项目主线数据库结构。<code>product_recipes</code> 和 <code>recipe_model_bindings</code> 已从主线中移除，
+      启动时数据库初始化也会自动删除这两张旧表。
+    </p>
+
+    <div class="grid">
+      <section class="card">
+        <h2>当前主线表</h2>
+        <ul>
+          <li><code>seafood_products</code></li>
+          <li><code>seafood_traits</code></li>
+          <li><code>model_versions</code></li>
+          <li><code>channel_configs</code></li>
+        </ul>
+      </section>
+
+      <section class="card">
+        <h2>运行与辅助表</h2>
+        <ul>
+          <li><code>inspection_records</code></li>
+          <li><code>alarm_events</code></li>
+          <li><code>user_accounts</code></li>
+        </ul>
+      </section>
+    </div>
+
+    <section class="diagram">
+      <div class="row">
+        <div class="entity">
+          <div class="title">seafood_products</div>
+          <div class="body">
+            id<br/>code<br/>name<br/>is_enabled<br/>classes_file_path<br/>label_map_json<br/>predict_config_path
+          </div>
+        </div>
+      </div>
+
+      <div class="arrow">1 - N</div>
+      <div class="row">
+        <div class="entity">
+          <div class="title">seafood_traits</div>
+          <div class="body">
+            id<br/>seafood_product_id<br/>name<br/>is_normal<br/>sort_order<br/>is_enabled
+          </div>
+        </div>
+        <div class="entity">
+          <div class="title">channel_configs</div>
+          <div class="body">
+            id<br/>channel_no<br/>name<br/>seafood_product_id<br/>model_version_id<br/>model_path<br/>confidence_threshold<br/>predict_config_path<br/>... 
+          </div>
+        </div>
+      </div>
+
+      <div class="arrow">channel_configs N - 1 model_versions</div>
+      <div class="row">
+        <div class="entity">
+          <div class="title">model_versions</div>
+          <div class="body">
+            id<br/>seafood_category_id<br/>version<br/>source_weight_path<br/>notes<br/>status (0 normal / 9 deleted)<br/>created_at
+          </div>
+        </div>
+      </div>
+
+      <div class="arrow">model_versions 1 - N inspection_records</div>
+      <div class="row">
+        <div class="entity">
+          <div class="title">inspection_records</div>
+          <div class="body">
+            id<br/>recipe_id (legacy field name)<br/>model_version_id<br/>batch_code<br/>image_path<br/>detections_json<br/>eject_command_json
+          </div>
+        </div>
+        <div class="entity">
+          <div class="title">alarm_events</div>
+          <div class="body">
+            id<br/>severity<br/>source<br/>code<br/>message<br/>raised_at<br/>is_acknowledged
+          </div>
+        </div>
+        <div class="entity">
+          <div class="title">user_accounts</div>
+          <div class="body">
+            id<br/>user_name<br/>display_name<br/>role<br/>is_enabled
+          </div>
+        </div>
+      </div>
+
+      <div class="footer">
+        说明：<code>inspection_records.recipe_id</code> 目前仍是历史字段名，用于兼容旧记录结构；它已经不再对应独立的
+        <code>product_recipes</code> 业务模型。
+      </div>
+    </section>
+  </div>
+</body>
+</html>

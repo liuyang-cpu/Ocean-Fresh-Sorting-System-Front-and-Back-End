@@ -1,0 +1,31 @@
+:root {
+  color-scheme: dark;
+  font-family: "Microsoft YaHei UI", "Noto Sans SC", "Segoe UI", sans-serif;
+
+  --hmi-bg: #06131f;
+  --hmi-bg-deep: #030b13;
+  --hmi-rail: #08283c;
+  --hmi-rail-active: #11578a;
+  --hmi-surface: #0b2438;
+  --hmi-surface-strong: #0d2a40;
+  --hmi-surface-soft: #092033;
+  --hmi-input: #051625;
+  --hmi-border: #245777;
+  --hmi-border-strong: #34759e;
+  --hmi-text: #eef8ff;
+  --hmi-text-soft: #bfd8ea;
+  --hmi-muted: #8db1cc;
+  --hmi-muted-dark: #536f86;
+  --hmi-primary: #226fe5;
+  --hmi-primary-hot: #369bff;
+  --hmi-success: #20d991;
+  --hmi-warning: #ffa722;
+  --hmi-danger: #ff6473;
+  --hmi-cyan: #22d3c5;
+
+  --hmi-radius-sm: 5px;
+  --hmi-radius-md: 8px;
+  --hmi-radius-lg: 10px;
+  --hmi-shadow-panel: 0 18px 48px rgba(0, 0, 0, 0.28);
+  --hmi-shadow-action: 0 12px 26px rgba(0, 0, 0, 0.34);
+}

@@ -1,0 +1,234 @@
+meta:
+  profile: engineering-review
+  theme: tech-blue
+  source: generated
+  layout: horizontal
+  canvas: 2400x1500
+  routing: orthogonal
+  title: "海洋生鲜分拣系统用例图"
+  description: "基于当前项目框架的主要参与者与核心用例"
+
+nodes:
+  - id: admin
+    label: 管理员
+    type: user
+    size: medium
+    position: { x: 120, y: 220 }
+    style:
+      fillColor: "#E0F2FE"
+      strokeColor: "#2563EB"
+
+  - id: operator
+    label: 操作员
+    type: user
+    size: medium
+    position: { x: 120, y: 620 }
+    style:
+      fillColor: "#DCFCE7"
+      strokeColor: "#16A34A"
+
+  - id: xray
+    label: X 光图片源\n(单张导入/连续回放)
+    type: document
+    size: medium
+    position: { x: 120, y: 1050 }
+
+  - id: yolo
+    label: YOLO FastAPI 服务
+    type: cloud
+    size: medium
+    position: { x: 2220, y: 420 }
+
+  - id: ejector
+    label: 剔除机构
+    type: process
+    size: medium
+    position: { x: 2220, y: 1080 }
+
+  - id: systemTitle
+    label: 海洋生鲜分拣系统
+    type: text
+    bounds:
+      x: 640
+      y: 70
+      width: 420
+      height: 40
+    style:
+      fontSize: 24
+      fontColor: "#10355C"
+      fontStyle: 1
+      align: left
+      verticalAlign: middle
+
+  - id: product
+    label: 维护海鲜产品
+    type: user
+    size: medium
+    position: { x: 720, y: 180 }
+    style:
+      fillColor: "#FFFFFF"
+      strokeColor: "#1D4ED8"
+
+  - id: traitMap
+    label: 维护性状、classes.txt\n与标签映射
+    type: user
+    size: large
+    position: { x: 1200, y: 180 }
+    style:
+      fillColor: "#FFFFFF"
+      strokeColor: "#1D4ED8"
+
+  - id: productJson
+    label: 维护产品级\nYOLO 配置 JSON
+    type: user
+    size: large
+    position: { x: 1680, y: 180 }
+    style:
+      fillColor: "#FFFFFF"
+      strokeColor: "#1D4ED8"
+
+  - id: model
+    label: 导入模型
+    type: user
+    size: medium
+    position: { x: 720, y: 430 }
+    style:
+      fillColor: "#FFFFFF"
+      strokeColor: "#1D4ED8"
+
+  - id: channel
+    label: 配置通道
+    type: user
+    size: medium
+    position: { x: 1200, y: 430 }
+    style:
+      fillColor: "#FFFFFF"
+      strokeColor: "#1D4ED8"
+
+  - id: enableChannel
+    label: 启用当前通道
+    type: user
+    size: medium
+    position: { x: 1680, y: 430 }
+    style:
+      fillColor: "#FFFFFF"
+      strokeColor: "#1D4ED8"
+
+  - id: singleTune
+    label: 单张 X 光图联调
+    type: user
+    size: medium
+    position: { x: 720, y: 760 }
+    style:
+      fillColor: "#FFFFFF"
+      strokeColor: "#1D4ED8"
+
+  - id: streamTune
+    label: 连续图像回放联调
+    type: user
+    size: large
+    position: { x: 1200, y: 760 }
+    style:
+      fillColor: "#FFFFFF"
+      strokeColor: "#1D4ED8"
+
+  - id: monitor
+    label: 查看识别结果图、检测框\n与实时性能指标
+    type: user
+    size: large
+    position: { x: 1680, y: 760 }
+    style:
+      fillColor: "#FFFFFF"
+      strokeColor: "#1D4ED8"
+
+  - id: stats
+    label: 查看海鲜总数\n与性状统计
+    type: user
+    size: medium
+    position: { x: 720, y: 1080 }
+    style:
+      fillColor: "#FFFFFF"
+      strokeColor: "#1D4ED8"
+
+  - id: infer
+    label: 调用 YOLO 推理服务
+    type: user
+    size: medium
+    position: { x: 1200, y: 1080 }
+    style:
+      fillColor: "#FFFFFF"
+      strokeColor: "#1D4ED8"
+
+  - id: ejectPreview
+    label: 生成剔除命令预览
+    type: user
+    size: medium
+    position: { x: 1680, y: 1080 }
+    style:
+      fillColor: "#FFFFFF"
+      strokeColor: "#1D4ED8"
+
+edges:
+  - from: admin
+    to: product
+    type: primary
+  - from: admin
+    to: traitMap
+    type: primary
+  - from: admin
+    to: productJson
+    type: primary
+  - from: admin
+    to: model
+    type: primary
+  - from: admin
+    to: channel
+    type: primary
+  - from: admin
+    to: enableChannel
+    type: primary
+
+  - from: operator
+    to: singleTune
+    type: primary
+  - from: operator
+    to: streamTune
+    type: primary
+  - from: operator
+    to: monitor
+    type: primary
+  - from: operator
+    to: stats
+    type: primary
+  - from: operator
+    to: ejectPreview
+    type: primary
+
+  - from: xray
+    to: singleTune
+    type: optional
+  - from: xray
+    to: streamTune
+    type: optional
+
+  - from: singleTune
+    to: infer
+    type: secondary
+  - from: streamTune
+    to: infer
+    type: secondary
+  - from: infer
+    to: yolo
+    type: primary
+  - from: infer
+    to: monitor
+    type: secondary
+  - from: infer
+    to: stats
+    type: secondary
+  - from: infer
+    to: ejectPreview
+    type: secondary
+  - from: ejectPreview
+    to: ejector
+    type: primary

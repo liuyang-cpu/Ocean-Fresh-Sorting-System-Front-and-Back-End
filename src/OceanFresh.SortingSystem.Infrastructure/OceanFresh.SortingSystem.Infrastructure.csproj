@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.2" />
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="8.0.7" />
+    <PackageReference Include="Microsoft.ML.OnnxRuntime" Version="1.19.2" />
+    <PackageReference Include="SixLabors.ImageSharp" Version="3.1.8" />
+    <ProjectReference Include="..\OceanFresh.SortingSystem.Application\OceanFresh.SortingSystem.Application.csproj" />
+    <ProjectReference Include="..\OceanFresh.SortingSystem.Domain\OceanFresh.SortingSystem.Domain.csproj" />
+  </ItemGroup>
+</Project>

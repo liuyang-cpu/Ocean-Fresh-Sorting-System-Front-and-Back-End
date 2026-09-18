@@ -1,0 +1,80 @@
+@startuml
+skinparam defaultFontName "Microsoft YaHei"
+skinparam shadowing false
+skinparam dpi 160
+skinparam packageStyle rectangle
+skinparam roundCorner 12
+skinparam actorStyle awesome
+skinparam ArrowColor #475569
+skinparam UsecaseBorderColor #EA580C
+skinparam UsecaseBackgroundColor #FFF7ED
+skinparam PackageBorderColor #FED7AA
+skinparam PackageBackgroundColor #FFFBEB
+skinparam ActorBorderColor #7C2D12
+skinparam ActorBackgroundColor #FFEDD5
+
+left to right direction
+title 产品、模型与通道配置用例图
+
+actor "管理员" as Admin
+
+rectangle "设置 / 产品设置" {
+  package "海鲜产品" {
+    usecase "添加海鲜产品" as UC_AddProduct
+    usecase "编辑海鲜产品" as UC_EditProduct
+    usecase "删除海鲜产品" as UC_DeleteProduct
+    usecase "维护正常项与缺陷项" as UC_Trait
+    usecase "导入或维护 classes.txt" as UC_Classes
+    usecase "维护模型标签与业务性状映射" as UC_LabelMap
+    usecase "预览产品配置" as UC_PreviewProduct
+  }
+
+  package "模型管理" {
+    usecase "导入 YOLO 权重文件" as UC_ImportWeight
+    usecase "绑定海鲜产品" as UC_BindProduct
+    usecase "维护模型版本编号" as UC_ModelVersion
+    usecase "编辑模型描述与权重路径" as UC_EditModel
+    usecase "查看模型详情" as UC_ModelDetail
+    usecase "删除未绑定模型" as UC_DeleteModel
+  }
+
+  package "通道配置" {
+    usecase "添加通道" as UC_AddChannel
+    usecase "绑定产品与模型" as UC_BindChannel
+    usecase "设置置信度阈值" as UC_Threshold
+    usecase "启用或停用通道" as UC_EnableChannel
+    usecase "编辑或删除通道" as UC_EditChannel
+  }
+}
+
+Admin --> UC_AddProduct
+Admin --> UC_EditProduct
+Admin --> UC_DeleteProduct
+Admin --> UC_PreviewProduct
+Admin --> UC_ImportWeight
+Admin --> UC_EditModel
+Admin --> UC_ModelDetail
+Admin --> UC_DeleteModel
+Admin --> UC_AddChannel
+Admin --> UC_EditChannel
+
+UC_AddProduct .> UC_Trait : <<include>>
+UC_EditProduct .> UC_Trait : <<include>>
+UC_EditProduct .> UC_Classes : <<include>>
+UC_EditProduct .> UC_LabelMap : <<include>>
+UC_ImportWeight .> UC_BindProduct : <<include>>
+UC_ImportWeight .> UC_ModelVersion : <<include>>
+UC_BindChannel .> UC_BindProduct : <<include>>
+UC_AddChannel .> UC_BindChannel : <<include>>
+UC_AddChannel .> UC_Threshold : <<include>>
+UC_AddChannel .> UC_EnableChannel : <<include>>
+
+note right of UC_DeleteModel
+  被通道使用的模型不可删除。
+end note
+
+note bottom of UC_EnableChannel
+  机器运行期间不可切换当前启用通道。
+end note
+
+@enduml

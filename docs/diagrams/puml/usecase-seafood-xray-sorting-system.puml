@@ -1,0 +1,121 @@
+@startuml
+skinparam defaultFontName "Microsoft YaHei"
+skinparam shadowing false
+skinparam dpi 160
+skinparam packageStyle rectangle
+skinparam roundCorner 12
+skinparam actorStyle awesome
+skinparam ArrowColor #475569
+skinparam UsecaseBorderColor #2563EB
+skinparam UsecaseBackgroundColor #EFF6FF
+skinparam PackageBorderColor #CBD5E1
+skinparam PackageBackgroundColor #F8FAFC
+skinparam ActorBorderColor #0F172A
+skinparam ActorBackgroundColor #E2E8F0
+
+left to right direction
+title 海鲜 X 光分拣系统用例图
+
+actor "操作员" as Operator
+actor "管理员" as Admin
+actor "X 光采集链路\n/ 工业相机" as Xray
+actor "YOLO 推理服务" as Yolo
+actor "PLC / 剔除控制器" as Plc
+
+Admin --|> Operator
+
+rectangle "海鲜 X 光分拣系统" {
+  package "生产首页" {
+    usecase "查看实时 X 光图像\n与 YOLO 检测结果" as UC_ViewLive
+    usecase "启动 / 停止机器" as UC_RunMachine
+    usecase "创建或进入检测任务" as UC_Task
+    usecase "采集 X 光图像" as UC_Capture
+    usecase "导入单张图片检测" as UC_ImportOne
+    usecase "选择目录并批量检测" as UC_Batch
+    usecase "AI 识别品类与缺陷" as UC_Detect
+    usecase "查看当前图片识别矩阵" as UC_CurrentResult
+    usecase "查看分类统计与运行状态" as UC_RuntimeStats
+  }
+
+  package "用户中心" {
+    usecase "查看当前用户与权限范围" as UC_UserInfo
+    usecase "修改管理员密码" as UC_ChangePassword
+  }
+
+  package "数据中心" {
+    usecase "按产品和时间范围筛选数据" as UC_FilterData
+    usecase "查看历史统计\n良率 / 缺陷排行 / 趋势" as UC_History
+    usecase "查看检测任务记录" as UC_TaskRecords
+    usecase "查看任务详情\n占比与缺陷分布" as UC_TaskDetail
+    usecase "导出检测报表\n(后续增强)" as UC_ExportReport
+    usecase "异常图片追溯\n(后续增强)" as UC_TraceImage
+  }
+
+  package "管理员设置" {
+    usecase "维护海鲜产品\n性状与标签映射" as UC_Product
+    usecase "管理 YOLO 模型\n权重与版本" as UC_Model
+    usecase "配置检测通道\n产品 / 模型 / 阈值" as UC_Channel
+    usecase "管理硬件设备\n光源 / 探测器 / 传送带 / 剔除设备" as UC_Device
+    usecase "配置剔除控制\n方式 / 剔除位 / 动作参数" as UC_Eject
+    usecase "查看并确认安全预警" as UC_Alarm
+    usecase "软件维护\n版本查看 / 更新包校验" as UC_Maintenance
+  }
+}
+
+Operator --> UC_ViewLive
+Operator --> UC_RunMachine
+Operator --> UC_ImportOne
+Operator --> UC_Batch
+Operator --> UC_CurrentResult
+Operator --> UC_RuntimeStats
+Operator --> UC_UserInfo
+Operator --> UC_FilterData
+Operator --> UC_History
+Operator --> UC_TaskRecords
+Operator --> UC_TaskDetail
+
+Admin --> UC_ChangePassword
+Admin --> UC_Product
+Admin --> UC_Model
+Admin --> UC_Channel
+Admin --> UC_Device
+Admin --> UC_Eject
+Admin --> UC_Alarm
+Admin --> UC_Maintenance
+Admin --> UC_ExportReport
+Admin --> UC_TraceImage
+
+Xray --> UC_Capture
+Yolo --> UC_Detect
+Plc --> UC_Eject
+Plc --> UC_Alarm
+
+UC_RunMachine .> UC_Task : <<include>>
+UC_RunMachine .> UC_Capture : <<include>>
+UC_Capture .> UC_Detect : <<include>>
+UC_ImportOne .> UC_Detect : <<include>>
+UC_Batch .> UC_Detect : <<include>>
+UC_Detect .> UC_CurrentResult : <<include>>
+UC_Detect .> UC_RuntimeStats : <<include>>
+UC_Detect .> UC_TaskRecords : <<include>>
+
+UC_History .> UC_FilterData : <<include>>
+UC_TaskRecords .> UC_FilterData : <<include>>
+UC_TaskDetail .> UC_TaskRecords : <<extend>>
+UC_ExportReport .> UC_TaskRecords : <<extend>>
+UC_TraceImage .> UC_TaskRecords : <<extend>>
+
+UC_Channel .> UC_Product : <<include>>
+UC_Channel .> UC_Model : <<include>>
+UC_Alarm .> UC_RunMachine : <<extend>>\n关键硬件故障阻断运行
+
+note right of UC_Channel
+  机器运行期间不可切换当前启用通道。
+end note
+
+note right of UC_Alarm
+  X 光光源、X 光探测器、传送带、
+  剔除设备异常时进入故障状态。
+end note
+
+@enduml

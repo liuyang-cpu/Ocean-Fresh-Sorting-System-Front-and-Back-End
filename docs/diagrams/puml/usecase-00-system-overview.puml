@@ -1,0 +1,88 @@
+@startuml
+skinparam defaultFontName "Microsoft YaHei"
+skinparam shadowing false
+skinparam dpi 160
+skinparam packageStyle rectangle
+skinparam roundCorner 12
+skinparam actorStyle awesome
+skinparam ArrowColor #475569
+skinparam UsecaseBorderColor #2563EB
+skinparam UsecaseBackgroundColor #EFF6FF
+skinparam PackageBorderColor #CBD5E1
+skinparam PackageBackgroundColor #F8FAFC
+skinparam ActorBorderColor #0F172A
+skinparam ActorBackgroundColor #E2E8F0
+
+left to right direction
+title 海鲜 X 光分拣系统总体用例图
+
+actor "操作员" as Operator
+actor "管理员" as Admin
+actor "X 光采集链路\n/ 工业相机" as Xray
+actor "YOLO 推理服务" as Yolo
+actor "PLC / 剔除控制器" as Plc
+
+Admin --|> Operator
+
+rectangle "海鲜 X 光分拣系统" {
+  package "首页" {
+    usecase "启动 / 停止机器" as UC_Run
+    usecase "配置数据源\nX 光相机 / 本地图片目录" as UC_Source
+    usecase "查看实时图像与识别结果" as UC_Live
+    usecase "查看分类统计与运行状态" as UC_Stats
+  }
+
+  package "用户" {
+    usecase "查看当前用户与权限范围" as UC_UserInfo
+    usecase "修改管理员密码" as UC_Password
+  }
+
+  package "数据" {
+    usecase "查看历史统计与良率趋势" as UC_History
+    usecase "查看检测任务记录" as UC_TaskRecord
+    usecase "复核异常剔除集合" as UC_Review
+  }
+
+  package "设置" {
+    usecase "维护产品、模型与通道" as UC_ProductModelChannel
+    usecase "维护硬件与剔除控制" as UC_HardwareEject
+    usecase "查看并确认安全预警" as UC_Alarm
+    usecase "软件维护与更新包校验" as UC_Maintain
+  }
+
+  usecase "退出系统" as UC_Exit
+}
+
+Operator --> UC_Run
+Operator --> UC_Source
+Operator --> UC_Live
+Operator --> UC_Stats
+Operator --> UC_UserInfo
+Operator --> UC_History
+Operator --> UC_TaskRecord
+Operator --> UC_Exit
+
+Admin --> UC_Password
+Admin --> UC_Review
+Admin --> UC_ProductModelChannel
+Admin --> UC_HardwareEject
+Admin --> UC_Alarm
+Admin --> UC_Maintain
+
+Xray --> UC_Live
+Yolo --> UC_Live
+Plc --> UC_HardwareEject
+Plc --> UC_Alarm
+
+UC_Run .> UC_Source : <<include>>
+UC_Live .> UC_Stats : <<include>>
+UC_TaskRecord .> UC_Review : <<extend>>
+UC_Alarm .> UC_Run : <<extend>>\n关键硬件异常阻断运行
+
+note right of UC_Source
+  X 光相机为生产检测模式；
+  本地图片目录为离线检测模式，
+  不输出真实剔除动作。
+end note
+
+@enduml

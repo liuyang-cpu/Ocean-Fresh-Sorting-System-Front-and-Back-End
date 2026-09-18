@@ -1,0 +1,82 @@
+@startuml
+skinparam defaultFontName "Microsoft YaHei"
+skinparam shadowing false
+skinparam dpi 160
+skinparam packageStyle rectangle
+skinparam roundCorner 12
+skinparam actorStyle awesome
+skinparam ArrowColor #475569
+skinparam UsecaseBorderColor #DC2626
+skinparam UsecaseBackgroundColor #FEF2F2
+skinparam PackageBorderColor #FECACA
+skinparam PackageBackgroundColor #FFF7F7
+skinparam ActorBorderColor #7F1D1D
+skinparam ActorBackgroundColor #FEE2E2
+
+left to right direction
+title 硬件、剔除控制与安全预警用例图
+
+actor "管理员" as Admin
+actor "X 光探测器\n/ 工业相机" as Xray
+actor "传送带" as Conveyor
+actor "PLC / 剔除控制器" as Plc
+actor "剔除设备" as EjectDevice
+
+rectangle "设置 / 硬件与安全" {
+  package "设备管理" {
+    usecase "刷新设备状态" as UC_RefreshDevice
+    usecase "新增设备" as UC_AddDevice
+    usecase "保存设备信息" as UC_SaveDevice
+    usecase "删除设备" as UC_DeleteDevice
+    usecase "查看设备编号、类型、固件与状态" as UC_DeviceInfo
+    usecase "设备自检" as UC_SelfTest
+  }
+
+  package "剔除控制" {
+    usecase "维护剔除方式" as UC_EjectMode
+    usecase "维护剔除位" as UC_EjectPosition
+    usecase "维护动作参数\n气吹 / 推杆 / 翻板 / 下沉" as UC_EjectParam
+    usecase "下发剔除参数" as UC_SendParam
+  }
+
+  package "安全预警" {
+    usecase "刷新预警" as UC_RefreshAlarm
+    usecase "查看未确认预警" as UC_ViewAlarm
+    usecase "查看硬件联锁状态" as UC_Interlock
+    usecase "确认选中预警" as UC_ConfirmAlarm
+    usecase "阻断机器正常运行" as UC_BlockRun
+  }
+}
+
+Admin --> UC_RefreshDevice
+Admin --> UC_AddDevice
+Admin --> UC_SaveDevice
+Admin --> UC_DeleteDevice
+Admin --> UC_EjectMode
+Admin --> UC_EjectPosition
+Admin --> UC_EjectParam
+Admin --> UC_RefreshAlarm
+Admin --> UC_ViewAlarm
+Admin --> UC_ConfirmAlarm
+
+Xray --> UC_DeviceInfo
+Xray --> UC_Interlock
+Conveyor --> UC_DeviceInfo
+Conveyor --> UC_Interlock
+Plc --> UC_SendParam
+Plc --> UC_Interlock
+EjectDevice --> UC_DeviceInfo
+EjectDevice --> UC_Interlock
+
+UC_RefreshDevice .> UC_DeviceInfo : <<include>>
+UC_RefreshDevice .> UC_SelfTest : <<include>>
+UC_EjectParam .> UC_SendParam : <<extend>>\n后续接入 PLC 后
+UC_ViewAlarm .> UC_Interlock : <<include>>
+UC_Interlock .> UC_BlockRun : <<extend>>\n关键硬件异常
+
+note right of UC_Interlock
+  X 光光源、X 光探测器、传送带、
+  剔除设备均属于关键硬件。
+end note
+
+@enduml

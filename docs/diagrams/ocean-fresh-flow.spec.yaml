@@ -1,0 +1,226 @@
+meta:
+  profile: engineering-review
+  theme: tech-blue
+  source: generated
+  layout: vertical
+  canvas: 1800x1600
+  routing: orthogonal
+  title: "海洋生鲜分拣系统联调与推理流程图"
+  description: "当前项目框架下，从启用通道到 YOLO 推理、后处理与剔除预览的核心流程"
+
+modules:
+  - id: hmi
+    label: 前端监控页 / 联调入口
+    color: $primary
+  - id: backend
+    label: 后端 Runtime / LocalApi
+    color: $secondary
+  - id: yolo
+    label: YOLO FastAPI 服务
+    color: $accent
+
+nodes:
+  - id: start
+    label: 开始联调
+    type: terminal
+    module: hmi
+    position: { x: 300, y: 80 }
+
+  - id: selectInput
+    label: 导入单张图片\n或选择连续图像文件夹
+    type: document
+    module: hmi
+    size: large
+    position: { x: 300, y: 220 }
+
+  - id: activeChannel
+    label: 读取当前启用通道
+    type: service
+    module: backend
+    position: { x: 300, y: 380 }
+
+  - id: resolveConfig
+    label: 解析运行参数\n海鲜产品 + 模型 + 产品级 JSON + 阈值
+    type: process
+    module: backend
+    size: large
+    position: { x: 300, y: 540 }
+
+  - id: modeDecision
+    label: 联调模式?
+    type: decision
+    module: backend
+    position: { x: 300, y: 700 }
+
+  - id: manualInfer
+    label: 调用单张 /infer
+    type: service
+    module: yolo
+    position: { x: 1080, y: 700 }
+
+  - id: startStream
+    label: start\n创建流式会话并预热模型
+    type: service
+    module: yolo
+    size: large
+    position: { x: 300, y: 860 }
+
+  - id: pushFrame
+    label: 按 68ms/帧 送入一张图片
+    type: process
+    module: backend
+    size: medium
+    position: { x: 300, y: 1020 }
+
+  - id: firstFrame
+    label: 是否为会话首帧?
+    type: decision
+    module: yolo
+    position: { x: 300, y: 1180 }
+
+  - id: bufferFrame
+    label: 首帧缓冲\n等待下一帧
+    type: queue
+    module: yolo
+    position: { x: 80, y: 1340 }
+
+  - id: inferFrame
+    label: 内存常驻模型推理\nmodel.predict()
+    type: service
+    module: yolo
+    size: large
+    position: { x: 520, y: 1340 }
+
+  - id: phase2
+    label: 同帧处理 + 相邻帧去重\nphase2 后处理
+    type: process
+    module: yolo
+    size: large
+    position: { x: 520, y: 1500 }
+
+  - id: finalizePrev
+    label: 定稿上一帧结果
+    type: service
+    module: backend
+    position: { x: 900, y: 1500 }
+
+  - id: labelMap
+    label: 按海鲜产品映射\nclass_x -> 业务性状
+    type: process
+    module: backend
+    size: large
+    position: { x: 1220, y: 1500 }
+
+  - id: stats
+    label: 更新检测框、识别结果图\n总数统计、性状统计、性能指标
+    type: process
+    module: hmi
+    size: large
+    position: { x: 1540, y: 1500 }
+
+  - id: eject
+    label: 计算剔除预览\n目标通道 + 触发时延
+    type: process
+    module: backend
+    size: medium
+    position: { x: 1540, y: 1340 }
+
+  - id: hasMore
+    label: 还有下一帧?
+    type: decision
+    module: backend
+    position: { x: 900, y: 1180 }
+
+  - id: finish
+    label: finish\n输出最后缓冲帧
+    type: service
+    module: yolo
+    position: { x: 1080, y: 1020 }
+
+  - id: end
+    label: 联调结束
+    type: terminal
+    module: hmi
+    position: { x: 1220, y: 860 }
+
+edges:
+  - from: start
+    to: selectInput
+    type: primary
+  - from: selectInput
+    to: activeChannel
+    type: primary
+  - from: activeChannel
+    to: resolveConfig
+    type: primary
+  - from: resolveConfig
+    to: modeDecision
+    type: primary
+
+  - from: modeDecision
+    to: manualInfer
+    type: optional
+    label: 单张图片
+  - from: modeDecision
+    to: startStream
+    type: primary
+    label: 连续回放
+
+  - from: manualInfer
+    to: labelMap
+    type: primary
+  - from: startStream
+    to: pushFrame
+    type: primary
+  - from: pushFrame
+    to: firstFrame
+    type: primary
+
+  - from: firstFrame
+    to: bufferFrame
+    type: optional
+    label: 是
+  - from: firstFrame
+    to: inferFrame
+    type: primary
+    label: 否
+
+  - from: inferFrame
+    to: phase2
+    type: primary
+  - from: phase2
+    to: finalizePrev
+    type: primary
+  - from: finalizePrev
+    to: labelMap
+    type: primary
+  - from: labelMap
+    to: stats
+    type: primary
+  - from: labelMap
+    to: eject
+    type: secondary
+
+  - from: bufferFrame
+    to: hasMore
+    type: secondary
+    label: 等待下一帧
+  - from: stats
+    to: hasMore
+    type: secondary
+
+  - from: hasMore
+    to: pushFrame
+    type: primary
+    label: 是
+  - from: hasMore
+    to: finish
+    type: optional
+    label: 否
+
+  - from: finish
+    to: labelMap
+    type: primary
+  - from: finish
+    to: end
+    type: secondary
