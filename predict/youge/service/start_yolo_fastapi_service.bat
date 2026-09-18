@@ -5,8 +5,8 @@ cd /d "%~dp0"
 
 if not "%OCEANFRESH_YOLO_PYTHON%"=="" (
   set "PYTHON_EXE=%OCEANFRESH_YOLO_PYTHON%"
-) else if exist "E:\Users\liuyang\anaconda3\envs\yolo\python.exe" (
-  set "PYTHON_EXE=E:\Users\liuyang\anaconda3\envs\yolo\python.exe"
+) else if exist "%~dp0..\..\..\.venv\Scripts\python.exe" (
+  set "PYTHON_EXE=%~dp0..\..\..\.venv\Scripts\python.exe"
 ) else (
   set "PYTHON_EXE=python"
 )
