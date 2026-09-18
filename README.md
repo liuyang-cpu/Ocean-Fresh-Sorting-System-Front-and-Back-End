@@ -1,5 +1,7 @@
 # Ocean Fresh Sorting System
 
+> 教师检查和首次运行请先阅读：[无硬件接入版运行说明](docs/教师运行说明.md)。
+
 Windows industrial HMI and local backend for X-ray seafood inspection, YOLO inference, production statistics, manual review, device monitoring, and ejector-control integration.
 
 ## System Goal
