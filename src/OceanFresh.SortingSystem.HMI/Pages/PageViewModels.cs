@@ -3457,7 +3457,8 @@ public sealed class ProductEditorPageViewModel : ViewModelBase, IActivatablePage
             Title = "选择产品标准 classes.txt",
             Filter = "YOLO 类别文件 (classes.txt)|classes.txt|文本文件 (*.txt)|*.txt",
             CheckFileExists = true,
-            Multiselect = false
+            Multiselect = false,
+            InitialDirectory = Path.Combine(AppContext.BaseDirectory, "predict", "youge")
         };
 
         if (dialog.ShowDialog() == true)
@@ -5276,7 +5277,8 @@ public sealed class ModelImportPageViewModel : ViewModelBase, IActivatablePageVi
             Title = "选择 YOLO 权重文件",
             Filter = "YOLO 权重文件 (*.pt;*.onnx)|*.pt;*.onnx|PyTorch 权重 (*.pt)|*.pt|ONNX 模型 (*.onnx)|*.onnx",
             CheckFileExists = true,
-            Multiselect = false
+            Multiselect = false,
+            InitialDirectory = Path.Combine(AppContext.BaseDirectory, "models")
         };
 
         if (dialog.ShowDialog() == true)
